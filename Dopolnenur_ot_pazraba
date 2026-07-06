@@ -325,8 +325,8 @@ while true do
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
             local now = os.clock()
-            -- Alternates active desk every 3.0 seconds
-            if (now - stateStartTime > 3.0) then
+            -- Alternates active desk every 5.0 seconds
+            if (now - stateStartTime > 5.0) then
                 stateStartTime = now
                 if currentPodium == "ID" then
                     currentPodium = "MD"
