@@ -59,7 +59,7 @@ local dumbo3435_30 = objects and objects:WaitForChild("FireExtinguisherPoints", 
 local dumbo3435_31 = dumbo3435_18:WaitForChild("PlayerGui", 15);
 local dumbo3435_32 = dumbo3435_31 and dumbo3435_31:WaitForChild("EndingUI", 15);
 local dumbo3435_20 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13["Resources"]:WaitForChild("Events", 15) and dumbo3435_13["Resources"]["Events"]:WaitForChild("Client", 15) and dumbo3435_13["Resources"]["Events"]["Client"]:WaitForChild("BackToLobby", 15);
-local dumbo3435_21 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13["Resources"]:WaitForChild("Events", 15) and dumbo3435_13["Resources"]["Events"]:WaitForChild("Client", 15) and dumbo3435_13["Resources"]["Events"]["Client"]:WaitForChild("FireExtinguisher", 15);
+local dumbo3435_21 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13["Resources"]:WaitForChild("Events", 15) and dumbo3435_13["Resources"]["Events"]:FindFirstChild("Client") and dumbo3435_13["Resources"]["Events"]["Client"]:WaitForChild("FireExtinguisher", 15);
 
 -- Calculate midpoint with fallbacks
 local midX, midZ = 0, 0
@@ -325,8 +325,8 @@ while true do
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
             local now = os.clock()
-            -- Alternates active desk every 5 seconds to process all queue passengers at one counter before swapping
-            if (now - stateStartTime > 5.0) then
+            -- Alternates active desk every 1.2 seconds so that they stand still at each desk but teleport frequently
+            if (now - stateStartTime > 1.2) then
                 stateStartTime = now
                 if currentPodium == "ID" then
                     currentPodium = "MD"
