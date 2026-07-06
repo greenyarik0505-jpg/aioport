@@ -291,8 +291,14 @@ while true do
     end
     
     if (dumbo3435_27 and dumbo3435_27["Enabled"] == true and dumbo3435_52 and dumbo3435_26) then
-        dumbo3435_52["CFrame"] = dumbo3435_26:GetPivot() + Vector3.new(0, 3, 0);
+        local computerPos = dumbo3435_26:GetPivot().Position
+        local playerPos = computerPos + Vector3.new(0, 2, 4)
+        
+        -- Orient player and camera to look directly at the computer screen
+        dumbo3435_52["CFrame"] = CFrame.lookAt(playerPos, computerPos)
+        dumbo3435_19["CFrame"] = CFrame.lookAt(playerPos + Vector3.new(0, 2, 2), computerPos)
         task.wait(0.5);
+        
         while dumbo3435_27["Enabled"] == true do
             local dumbo3435_79 = dumbo3435_28 and dumbo3435_28:FindFirstChild("ProximityPrompt");
             if dumbo3435_79 then
