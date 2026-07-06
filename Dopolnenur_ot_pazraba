@@ -325,8 +325,8 @@ while true do
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
             local now = os.clock()
-            -- Alternates active desk every 1.2 seconds so that they stand still at each desk but teleport frequently
-            if (now - stateStartTime > 1.2) then
+            -- Alternates active desk every 3.0 seconds so that they stand still at each desk but teleport frequently enough
+            if (now - stateStartTime > 3.0) then
                 stateStartTime = now
                 if currentPodium == "ID" then
                     currentPodium = "MD"
@@ -341,8 +341,15 @@ while true do
                 local targetCFrame = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
                 -- Teleport to ID desk only if we are physically far from it (>= 6.0 studs)
                 if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
+                    -- Reset physical velocity to ensure teleport is 100% successful on the first try
+                    pcall(function()
+                        dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        dumbo3435_52.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                    end)
                     dumbo3435_52["CFrame"] = targetCFrame
-                    task.wait(0.12)
+                    task.wait(0.08)
+                    dumbo3435_52["CFrame"] = targetCFrame
+                    task.wait(0.1)
                 end
                 -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_25)
@@ -350,8 +357,15 @@ while true do
                 local targetCFrame = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
                 -- Teleport to MD desk only if we are physically far from it (>= 6.0 studs)
                 if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
+                    -- Reset physical velocity to ensure teleport is 100% successful on the first try
+                    pcall(function()
+                        dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        dumbo3435_52.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                    end)
                     dumbo3435_52["CFrame"] = targetCFrame
-                    task.wait(0.12)
+                    task.wait(0.08)
+                    dumbo3435_52["CFrame"] = targetCFrame
+                    task.wait(0.1)
                 end
                 -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_23)
