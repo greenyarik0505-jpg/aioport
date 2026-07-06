@@ -310,8 +310,11 @@ while true do
     end
     
     if (dumbo3435_52) then
-        -- Keep player at midpoint (except when actively teleporting to buttons)
-        if (not pressingButtons) then
+        local hasFire = dumbo3435_35()
+        local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
+
+        -- Keep player at midpoint (except when actively teleporting to buttons, or resolving fire/computer events)
+        if (not pressingButtons and not hasFire and not compBroken) then
             if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
                 dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
                 task.wait(0.1);
@@ -319,8 +322,6 @@ while true do
         end
         
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
-        local hasFire = dumbo3435_35()
-        local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
         if (not compBroken and not hasFire) then
             -- Detect active passenger presence at each podium desk (distance <= 12 studs, ignoring voided NPCs)
             local npcAtID = false
