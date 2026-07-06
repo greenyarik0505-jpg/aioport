@@ -75,7 +75,8 @@ local dumbo3435_33 = Vector3.new(midX, 3.44, midZ);
 local dumbo3435_34 = {};
 
 local pressingButtons = false;
-local lastButtonPress = 0;
+local currentPodium = "ID"; -- Alternates between "ID" and "MD"
+local stateStartTime = os.clock();
 
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
@@ -313,7 +314,7 @@ while true do
         local hasFire = dumbo3435_35()
         local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
 
-        -- Keep player at midpoint (except when actively teleporting to buttons, or resolving fire/computer events)
+        -- Keep player at midpoint ONLY during active event resolving
         if (not pressingButtons and not hasFire and not compBroken) then
             if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
                 dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
@@ -323,71 +324,40 @@ while true do
         
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
-            -- Detect active passenger presence at each podium desk (distance <= 12 studs, searching recursively in WorkspaceScriptable)
-            local npcAtID = false
-            local npcAtMD = false
-            
-            if workspaceScriptable then
-                for _, desc in ipairs(workspaceScriptable:GetDescendants()) do
-                    if desc:IsA("Model") and desc:FindFirstChildOfClass("Humanoid") then
-                        if desc ~= dumbo3435_18.Character then
-                            local root = desc:FindFirstChild("HumanoidRootPart")
-                            if root then
-                                if root.Position.Y > -50 then
-                                    if dumbo3435_25 and dumbo3435_25.Parent then
-                                        local distID = (root.Position - dumbo3435_25.Parent.Position).Magnitude
-                                        if distID <= 12 then
-                                            npcAtID = true
-                                        end
-                                    end
-                                    if dumbo3435_23 and dumbo3435_23.Parent then
-                                        local distMD = (root.Position - dumbo3435_23.Parent.Position).Magnitude
-                                        if distMD <= 12 then
-                                            npcAtMD = true
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
+            local now = os.clock()
+            -- Alternates active desk every 5 seconds to process all queue passengers at one counter before swapping
+            if (now - stateStartTime > 5.0) then
+                stateStartTime = now
+                if currentPodium == "ID" then
+                    currentPodium = "MD"
+                else
+                    currentPodium = "ID"
                 end
             end
             
-            -- Only teleport and press if a passenger is actually waiting at that podium desk!
-            if npcAtID or npcAtMD then
-                local now = os.clock()
-                -- Teleport 1 time per second and press/spam multiple times to ensure server registers it
-                if (now - lastButtonPress > 1.0) then
-                    lastButtonPress = now
-                    pressingButtons = true
-                    
-                    -- Teleport to ID button and spam it ONLY if a passenger is waiting there
-                    if npcAtID and dumbo3435_25 then
-                        dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                        task.wait(0.12)
-                        for i = 1, 5 do
-                            triggerPrompt(dumbo3435_25)
-                            task.wait(0.03)
-                        end
-                        task.wait(0.05)
-                    end
-                    
-                    -- Teleport to MD button and spam it ONLY if a passenger is waiting there
-                    if npcAtMD and dumbo3435_23 then
-                        dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                        task.wait(0.12)
-                        for i = 1, 5 do
-                            triggerPrompt(dumbo3435_23)
-                            task.wait(0.03)
-                        end
-                        task.wait(0.05)
-                    end
-                    
-                    -- Teleport back to waiting spot
-                    dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33)
-                    pressingButtons = false
+            pressingButtons = true -- Disable midpoint teleportation
+            
+            if currentPodium == "ID" and dumbo3435_25 then
+                local targetCFrame = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                -- Teleport to ID desk if not already there
+                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude > 1.5 then
+                    dumbo3435_52["CFrame"] = targetCFrame
+                    task.wait(0.12)
                 end
+                -- Continuously trigger the prompt while standing at the desk (10 times/sec)
+                triggerPrompt(dumbo3435_25)
+            elseif currentPodium == "MD" and dumbo3435_23 then
+                local targetCFrame = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                -- Teleport to MD desk if not already there
+                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude > 1.5 then
+                    dumbo3435_52["CFrame"] = targetCFrame
+                    task.wait(0.12)
+                end
+                -- Continuously trigger the prompt while standing at the desk (10 times/sec)
+                triggerPrompt(dumbo3435_23)
             end
+        else
+            pressingButtons = false
         end
     end
     
