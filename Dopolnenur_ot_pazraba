@@ -1,54 +1,82 @@
 -- made by dumbo3435
--- deobfuscated & modified by Antigravity (Google DeepMind)
+-- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
+print("Secure the Airport: Waiting for game to load...")
 repeat
     task.wait();
 until game:IsLoaded() 
 
+print("Secure the Airport: Waiting for Map in workspace...")
 repeat
     task.wait();
 until workspace:FindFirstChild("Map") 
 
 task.wait(1);
-print("secure the airport loaded! | made by dumbo3435 | fixed by Antigravity");
+print("Secure the Airport: Map loaded. Initializing variables...");
 
 local dumbo3435_13 = game:GetService("ReplicatedStorage");
 local dumbo3435_14 = game:GetService("Players");
-local dumbo3435_15 = workspace["WorkspaceScriptable"]["Storage"]["NormalStorage"]["NPCWorkspace"];
-local dumbo3435_16 = workspace["WorkspaceScriptable"]["Storage"]["NormalStorage"]["HostileNPCWorkspace"];
-local dumbo3435_17 = workspace["WorkspaceScriptable"]["Storage"]["DisasterStorage"];
 local dumbo3435_18 = dumbo3435_14["LocalPlayer"];
 local dumbo3435_19 = workspace["CurrentCamera"];
-local dumbo3435_20 = dumbo3435_13["Resources"]["Events"]["Client"]["BackToLobby"];
-local dumbo3435_21 = dumbo3435_13["Resources"]["Events"]["Client"]["FireExtinguisher"];
-local dumbo3435_22 = workspace["WorkspaceScriptable"]["Objects"]["ButtonPodiums"]["ButtonPodiumMD"];
-local dumbo3435_23 = dumbo3435_22["ButtonAccept"]["ButtonPress"]["ProximityPrompt"];
-local dumbo3435_24 = workspace["WorkspaceScriptable"]["Objects"]["ButtonPodiums"]["ButtonPodiumID"];
-local dumbo3435_25 = dumbo3435_24["ButtonAccept"]["ButtonPress"]["ProximityPrompt"];
-local dumbo3435_26 = workspace["WorkspaceScriptable"]["Objects"]["Computers"]["ComputerPower"];
-local dumbo3435_27 = dumbo3435_26["Highlight"];
-local dumbo3435_28 = dumbo3435_26["Monitor"]["Attachment"];
 
-local dumbo3435_29 = {
-    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin1"],
-    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin2"],
-    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin3"]
-};
+local workspaceScriptable = workspace:WaitForChild("WorkspaceScriptable", 15);
+if not workspaceScriptable then
+    print("Secure the Airport Error: WorkspaceScriptable not found!");
+    return;
+end
 
-local dumbo3435_30 = workspace["WorkspaceScriptable"]["Objects"]["FireExtinguisherPoints"];
-local dumbo3435_31 = dumbo3435_18:WaitForChild("PlayerGui");
-local dumbo3435_32 = dumbo3435_31:WaitForChild("EndingUI", 435 - (44 + 386));
+local storage = workspaceScriptable:WaitForChild("Storage", 15);
+local normalStorage = storage and storage:WaitForChild("NormalStorage", 15);
 
--- Calculate the exact midpoint between the two buttons so that we don't need to teleport to press them.
-local mid = (dumbo3435_23.Parent.Position + dumbo3435_25.Parent.Position) / 2
-local dumbo3435_33 = Vector3.new(mid.X, 3.44, mid.Z);
+local dumbo3435_15 = normalStorage and normalStorage:WaitForChild("NPCWorkspace", 15);
+local dumbo3435_16 = normalStorage and normalStorage:WaitForChild("HostileNPCWorkspace", 15);
+local dumbo3435_17 = storage and storage:WaitForChild("DisasterStorage", 15);
+
+local objects = workspaceScriptable:WaitForChild("Objects", 15);
+local buttonPodiums = objects and objects:WaitForChild("ButtonPodiums", 15);
+
+local dumbo3435_22 = buttonPodiums and buttonPodiums:WaitForChild("ButtonPodiumMD", 15);
+local dumbo3435_23 = dumbo3435_22 and dumbo3435_22:WaitForChild("ButtonAccept", 15) and dumbo3435_22["ButtonAccept"]:WaitForChild("ButtonPress", 15) and dumbo3435_22["ButtonAccept"]["ButtonPress"]:WaitForChild("ProximityPrompt", 15);
+
+local dumbo3435_24 = buttonPodiums and buttonPodiums:WaitForChild("ButtonPodiumID", 15);
+local dumbo3435_25 = dumbo3435_24 and dumbo3435_24:WaitForChild("ButtonAccept", 15) and dumbo3435_24["ButtonAccept"]:WaitForChild("ButtonPress", 15) and dumbo3435_24["ButtonAccept"]["ButtonPress"]:WaitForChild("ProximityPrompt", 15);
+
+local computers = objects and objects:WaitForChild("Computers", 15);
+local dumbo3435_26 = computers and computers:WaitForChild("ComputerPower", 15);
+local dumbo3435_27 = dumbo3435_26 and dumbo3435_26:WaitForChild("Highlight", 15);
+local dumbo3435_28 = dumbo3435_26 and dumbo3435_26:WaitForChild("Monitor", 15) and dumbo3435_26["Monitor"]:WaitForChild("Attachment", 15);
+
+local dumbo3435_29 = {};
+local garbageBins = objects and objects:WaitForChild("GarbageBins", 15);
+if garbageBins then
+    table.insert(dumbo3435_29, garbageBins:WaitForChild("GarbageBin1", 15));
+    table.insert(dumbo3435_29, garbageBins:WaitForChild("GarbageBin2", 15));
+    table.insert(dumbo3435_29, garbageBins:WaitForChild("GarbageBin3", 15));
+end
+
+local dumbo3435_30 = objects and objects:WaitForChild("FireExtinguisherPoints", 15);
+local dumbo3435_31 = dumbo3435_18:WaitForChild("PlayerGui", 15);
+local dumbo3435_32 = dumbo3435_31 and dumbo3435_31:WaitForChild("EndingUI", 15);
+local dumbo3435_20 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13["Resources"]:WaitForChild("Events", 15) and dumbo3435_13["Resources"]["Events"]:WaitForChild("Client", 15) and dumbo3435_13["Resources"]["Events"]["Client"]:WaitForChild("BackToLobby", 15);
+local dumbo3435_21 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13["Resources"]:WaitForChild("Events", 15) and dumbo3435_13["Resources"]["Events"]:WaitForChild("Client", 15) and dumbo3435_13["Resources"]["Events"]["Client"]:WaitForChild("FireExtinguisher", 15);
+
+-- Calculate midpoint with fallbacks
+local midX, midZ = 0, 0
+if dumbo3435_23 and dumbo3435_25 then
+    local mid = (dumbo3435_23.Parent.Position + dumbo3435_25.Parent.Position) / 2
+    midX, midZ = mid.X, mid.Z
+else
+    print("Secure the Airport Warning: Button prompts not found. Using default coordinates.");
+    midX, midZ = -(131.57999999999998 - 85), -(24.560000000000002 - 11);
+end
+local dumbo3435_33 = Vector3.new(midX, 3.44, midZ);
 
 local dumbo3435_34 = {};
 
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
-        if ((100 <= (993 + 2130)) and dumbo3435_37:FindFirstChild("FirePart") and dumbo3435_37["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_37["FirePart"]["IsOnFire"]["Value"] == true)) then
+        if (dumbo3435_37 and dumbo3435_37:FindFirstChild("FirePart") and dumbo3435_37["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_37["FirePart"]["IsOnFire"]["Value"] == true)) then
             return true;
         end
     end
@@ -57,7 +85,7 @@ end
 
 local function dumbo3435_38(dumbo3435_39)
     local dumbo3435_40 = dumbo3435_18["Character"];
-    if (not dumbo3435_40 or ((3526 - 2157) > (4084 + 903))) then
+    if (not dumbo3435_40) then
         return nil;
     end
     local dumbo3435_41 = dumbo3435_40:FindFirstChildOfClass("Humanoid");
@@ -65,15 +93,15 @@ local function dumbo3435_38(dumbo3435_39)
         return nil;
     end
     local dumbo3435_42 = dumbo3435_40:FindFirstChild(dumbo3435_39);
-    if (dumbo3435_42 or ((5212 - (555 + 64)) <= 2672)) then
+    if (dumbo3435_42) then
         return dumbo3435_42;
     end
     local dumbo3435_43 = dumbo3435_18["Backpack"]:FindFirstChild(dumbo3435_39);
-    if (dumbo3435_43 or ((1794 - (857 + 74)) >= (5722 - (116 + 1022)))) then
+    if (dumbo3435_43) then
         dumbo3435_41:EquipTool(dumbo3435_43);
         local dumbo3435_44 = 0;
         while not dumbo3435_40:FindFirstChild(dumbo3435_39) and (dumbo3435_44 < 20) do
-            task.wait(568.1 - (367 + 201));
+            task.wait(0.1);
             dumbo3435_44 = dumbo3435_44 + 1;
         end
     end
@@ -86,31 +114,35 @@ local function dumbo3435_45(dumbo3435_46)
     end
     local dumbo3435_47 = dumbo3435_46:FindFirstChild("HumanoidRootPart");
     local dumbo3435_48 = dumbo3435_46:FindFirstChildOfClass("Humanoid");
-    if (not dumbo3435_47 or ((2095 - (214 + 713)) > (790 + 2366))) then
+    if (not dumbo3435_47) then
         return;
     end
     dumbo3435_34[dumbo3435_46] = true;
-    if (dumbo3435_48 or ((114 + 610) >= (2545 - (282 + 595)))) then
-        dumbo3435_48["WalkSpeed"] = 0 - 0;
+    if (dumbo3435_48) then
+        dumbo3435_48["WalkSpeed"] = 0;
         dumbo3435_48["PlatformStand"] = true;
     end
     task.spawn(function()
         local dumbo3435_49 = 0;
-        while dumbo3435_46["Parent"] and (dumbo3435_47["Position"]['Y'] > -100) and (dumbo3435_49 < (177 - 127)) do
-            dumbo3435_47["CFrame"] = dumbo3435_47["CFrame"] - Vector3.new(859 - (814 + 45), 1787 - (1523 + 114), 0 + 0);
-            task.wait(0.1 + 0);
-            dumbo3435_49 = dumbo3435_49 + (1 - 0);
+        while dumbo3435_46["Parent"] and (dumbo3435_47["Position"]['Y'] > -100) and (dumbo3435_49 < 50) do
+            dumbo3435_47["CFrame"] = dumbo3435_47["CFrame"] - Vector3.new(0, 150, 0);
+            task.wait(0.1);
+            dumbo3435_49 = dumbo3435_49 + 1;
         end
         dumbo3435_34[dumbo3435_46] = nil;
     end);
 end
 
+print("Secure the Airport: Variables initialized! Starting main loop...");
+
 while true do
     if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
         local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
-        if (((1493 - (68 + 997)) < 1804) and dumbo3435_50 and dumbo3435_50["Visible"] and (dumbo3435_50["Text"] == "You secured the airport!")) then
-            task.wait(1275 - (226 + 1044));
-            dumbo3435_20:FireServer();
+        if (dumbo3435_50 and dumbo3435_50["Visible"] and (dumbo3435_50["Text"] == "You secured the airport!")) then
+            task.wait(3);
+            if dumbo3435_20 then
+                dumbo3435_20:FireServer();
+            end
             break;
         end
     end
@@ -118,28 +150,34 @@ while true do
     local dumbo3435_51 = dumbo3435_18["Character"];
     local dumbo3435_52 = dumbo3435_51 and dumbo3435_51:FindFirstChild("HumanoidRootPart");
     
-    for dumbo3435_53, dumbo3435_54 in dumbo3435_17:GetChildren() do
-        if ((dumbo3435_54["Name"] == "EnemyNPC") or (dumbo3435_54["Name"] == "FSEnemyNPC") or (dumbo3435_54["Name"] == "BossNPC") or (3325 > (20086 - 15473))) then
-            dumbo3435_45(dumbo3435_54);
+    if dumbo3435_17 then
+        for dumbo3435_53, dumbo3435_54 in dumbo3435_17:GetChildren() do
+            if (dumbo3435_54["Name"] == "EnemyNPC" or dumbo3435_54["Name"] == "FSEnemyNPC" or dumbo3435_54["Name"] == "BossNPC") then
+                dumbo3435_45(dumbo3435_54);
+            end
         end
     end
     
-    for dumbo3435_55, dumbo3435_56 in dumbo3435_16:GetChildren() do
-        dumbo3435_45(dumbo3435_56);
+    if dumbo3435_16 then
+        for dumbo3435_55, dumbo3435_56 in dumbo3435_16:GetChildren() do
+            dumbo3435_45(dumbo3435_56);
+        end
     end
     
-    for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
-        if (not dumbo3435_34[dumbo3435_58] or ((5067 - (32 + 85)) <= 4553)) then
-            local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
-            local dumbo3435_60 = dumbo3435_58:FindFirstChild("Properties");
-            local dumbo3435_61 = dumbo3435_60 and dumbo3435_60:FindFirstChild("RandomVariables");
-            if ((dumbo3435_59 and dumbo3435_61) or ((561 + 11) > (995 + 3491))) then
-                local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
-                local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
-                if ((1404 == 1404) and ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or (dumbo3435_63 and (dumbo3435_63["Value"] == true)))) then
-                    dumbo3435_45(dumbo3435_58);
-                else
-                    dumbo3435_59["WalkSpeed"] = 1157 - (892 + 65);
+    if dumbo3435_15 then
+        for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
+            if (not dumbo3435_34[dumbo3435_58]) then
+                local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
+                local dumbo3435_60 = dumbo3435_58:FindFirstChild("Properties");
+                local dumbo3435_61 = dumbo3435_60 and dumbo3435_60:FindFirstChild("RandomVariables");
+                if (dumbo3435_59 and dumbo3435_61) then
+                    local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
+                    local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
+                    if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or (dumbo3435_63 and (dumbo3435_63["Value"] == true))) then
+                        dumbo3435_45(dumbo3435_58);
+                    else
+                        dumbo3435_59["WalkSpeed"] = 200;
+                    end
                 end
             end
         end
@@ -147,32 +185,32 @@ while true do
     
     local dumbo3435_64 = nil;
     for dumbo3435_65, dumbo3435_66 in dumbo3435_29 do
-        if (dumbo3435_66:FindFirstChild("FirePart") and dumbo3435_66["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_66["FirePart"]["IsOnFire"]["Value"] == true)) then
+        if (dumbo3435_66 and dumbo3435_66:FindFirstChild("FirePart") and dumbo3435_66["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_66["FirePart"]["IsOnFire"]["Value"] == true)) then
             dumbo3435_64 = dumbo3435_66;
             break;
         end
     end
     
-    if (((6357 - 3692) <= (7269 - 3336)) and dumbo3435_64 and dumbo3435_52) then
-        local dumbo3435_67 = dumbo3435_51:FindFirstChild("Fire Extinguisher") or dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher");
-        if (((6007 - 2734) == (3623 - (87 + 263))) and not dumbo3435_67) then
+    if (dumbo3435_64 and dumbo3435_52) then
+        local dumbo3435_67 = dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"));
+        if (not dumbo3435_67 and dumbo3435_30) then
             for dumbo3435_68, dumbo3435_69 in dumbo3435_30:GetChildren() do
                 local dumbo3435_70 = dumbo3435_69:FindFirstChild("InteractPart");
                 local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild("ProximityPrompt");
-                if (((5247 - (630 + 793)) > (589 - (67 + 113))) and dumbo3435_71 and dumbo3435_71["Enabled"]) then
-                    dumbo3435_52["CFrame"] = dumbo3435_69:GetPivot() + Vector3.new(0, 2 + 0, 0);
+                if (dumbo3435_71 and dumbo3435_71["Enabled"]) then
+                    dumbo3435_52["CFrame"] = dumbo3435_69:GetPivot() + Vector3.new(0, 2, 0);
                     task.wait(0.4);
-                    local dumbo3435_72 = 0 - 0;
-                    while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher")) and (dumbo3435_72 < (6 + 9)) do
-                        if (fireproximityprompt or (3748 < (7615 - 5403))) then
+                    local dumbo3435_72 = 0;
+                    while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"))) and (dumbo3435_72 < 15) do
+                        if fireproximityprompt then
                             fireproximityprompt(dumbo3435_71);
                         else
                             dumbo3435_71:InputHoldBegin();
-                            task.wait(dumbo3435_71["HoldDuration"] + (1747.05 - (760 + 987)));
+                            task.wait(dumbo3435_71["HoldDuration"] + 0.05);
                             dumbo3435_71:InputHoldEnd();
                         end
-                        task.wait(0.4 + 0);
-                        dumbo3435_72 = dumbo3435_72 + (3 - 2);
+                        task.wait(0.4);
+                        dumbo3435_72 = dumbo3435_72 + 1;
                     end
                     break;
                 end
@@ -180,81 +218,97 @@ while true do
         end
         
         local dumbo3435_73 = dumbo3435_38("Fire Extinguisher");
-        if (((3039 - (802 + 150)) == (2853 - (745 + 21))) and dumbo3435_73 and dumbo3435_73:FindFirstChild("Toggle")) then
+        if (dumbo3435_73 and dumbo3435_73:FindFirstChild("Toggle")) then
             local dumbo3435_74 = dumbo3435_64:FindFirstChild("FirePart") or dumbo3435_64;
             local dumbo3435_75 = dumbo3435_74["Position"];
-            local dumbo3435_76 = dumbo3435_75 + Vector3.new(0, 1 + 1, 4);
+            local dumbo3435_76 = dumbo3435_75 + Vector3.new(0, 2, 4);
             dumbo3435_52["CFrame"] = CFrame.lookAt(dumbo3435_76, dumbo3435_75);
-            dumbo3435_19["CFrame"] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 5 - 3), dumbo3435_75);
+            dumbo3435_19["CFrame"] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 2), dumbo3435_75);
             task.wait(0.3);
-            dumbo3435_21:FireServer(dumbo3435_73, true);
+            if dumbo3435_21 then
+                dumbo3435_21:FireServer(dumbo3435_73, true);
+            end
             dumbo3435_73["Toggle"]:FireServer(true);
-            local dumbo3435_77 = 0 - 0;
+            local dumbo3435_77 = 0;
             while dumbo3435_74:FindFirstChild("IsOnFire") and (dumbo3435_74["IsOnFire"]["Value"] == true) and (dumbo3435_77 < 35) do
                 task.wait(0.2);
-                dumbo3435_77 = dumbo3435_77 + 1 + 0;
+                dumbo3435_77 = dumbo3435_77 + 1;
             end
-            dumbo3435_21:FireServer(dumbo3435_73, false);
+            if dumbo3435_21 then
+                dumbo3435_21:FireServer(dumbo3435_73, false);
+            end
             dumbo3435_73["Toggle"]:FireServer(false);
-            local dumbo3435_78 = workspace["WorkspaceScriptable"]["JailEssentials"]["Prisoner2"]:FindFirstChild("HumanoidRootPart");
-            if (dumbo3435_78 or ((2177 - (915 + 82)) == (6172 - 3992))) then
+            local jail = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("JailEssentials")
+            local prisoner = jail and jail:FindFirstChild("Prisoner2")
+            local dumbo3435_78 = prisoner and prisoner:FindFirstChild("HumanoidRootPart");
+            if (dumbo3435_78) then
                 dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
             end
-            task.wait(0.5 - 0);
+            task.wait(0.5);
             continue;
         else
             task.wait(1);
         end
     end
     
-    if (((34 + 4056) < (2711 + 1942)) and (dumbo3435_27["Enabled"] == true) and dumbo3435_52) then
-        dumbo3435_52["CFrame"] = dumbo3435_26:GetPivot() + Vector3.new(1055 - (87 + 968), 3, 0 - 0);
-        task.wait(1187.3 - (1069 + 118));
+    if (dumbo3435_27 and dumbo3435_27["Enabled"] == true and dumbo3435_52 and dumbo3435_26) then
+        dumbo3435_52["CFrame"] = dumbo3435_26:GetPivot() + Vector3.new(0, 3, 0);
+        task.wait(0.5);
         while dumbo3435_27["Enabled"] == true do
-            local dumbo3435_79 = dumbo3435_28:FindFirstChild("ProximityPrompt");
+            local dumbo3435_79 = dumbo3435_28 and dumbo3435_28:FindFirstChild("ProximityPrompt");
             if dumbo3435_79 then
-                if (fireproximityprompt or (3404 > (10215 - 5712))) then
+                if fireproximityprompt then
                     fireproximityprompt(dumbo3435_79);
                 else
                     dumbo3435_79:InputHoldBegin();
-                    task.wait(dumbo3435_79["HoldDuration"] + (0.05 - 0));
+                    task.wait(dumbo3435_79["HoldDuration"] + 0.05);
                     dumbo3435_79:InputHoldEnd();
                 end
             end
-            task.wait(0.3 + 0);
+            task.wait(0.3);
         end
-        local dumbo3435_78 = workspace["WorkspaceScriptable"]["JailEssentials"]["Prisoner2"]:FindFirstChild("HumanoidRootPart");
-        if (dumbo3435_78 or ((4711 - 2059) < (195 + 1))) then
+        local jail = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("JailEssentials")
+        local prisoner = jail and jail:FindFirstChild("Prisoner2")
+        local dumbo3435_78 = prisoner and prisoner:FindFirstChild("HumanoidRootPart");
+        if (dumbo3435_78) then
             dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
         end
-        task.wait(791.5 - (368 + 423));
+        task.wait(0.5);
         continue;
     end
     
-    if (((11320 - 7185) < (15138 - 10321)) and dumbo3435_52) then
-        if (((973 - (376 + 325)) == (290 - (10 + 8))) and ((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] <= (3.5 - 2))) then
-        else
+    if (dumbo3435_52) then
+        -- Keep player at midpoint
+        if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
             dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
-            task.wait(442.1 - (416 + 26));
+            task.wait(0.1);
         end
-        if ((dumbo3435_27["Enabled"] == false) and not dumbo3435_35()) then
+        
+        -- Automatically fire button prompts if we are not computer-broken and there is no fire
+        local hasFire = dumbo3435_35()
+        local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
+        if (not compBroken and not hasFire) then
             if fireproximityprompt then
-                fireproximityprompt(dumbo3435_25);
-                fireproximityprompt(dumbo3435_23);
+                if dumbo3435_25 then fireproximityprompt(dumbo3435_25); end
+                if dumbo3435_23 then fireproximityprompt(dumbo3435_23); end
             else
                 task.spawn(function()
-                    dumbo3435_25:InputHoldBegin();
-                    task.wait(dumbo3435_25["HoldDuration"] + 0.01);
-                    dumbo3435_25:InputHoldEnd();
+                    if dumbo3435_25 then
+                        dumbo3435_25:InputHoldBegin();
+                        task.wait(dumbo3435_25["HoldDuration"] + 0.01);
+                        dumbo3435_25:InputHoldEnd();
+                    end
                 end);
                 task.spawn(function()
-                    dumbo3435_23:InputHoldBegin();
-                    task.wait(dumbo3435_23["HoldDuration"] + (0.01 - 0));
-                    dumbo3435_23:InputHoldEnd();
+                    if dumbo3435_23 then
+                        dumbo3435_23:InputHoldBegin();
+                        task.wait(dumbo3435_23["HoldDuration"] + 0.01);
+                        dumbo3435_23:InputHoldEnd();
+                    end
                 end);
             end
         end
     end
     
-    task.wait(0.1 + 0);
+    task.wait(0.1);
 end
