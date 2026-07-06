@@ -325,7 +325,7 @@ while true do
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
             local now = os.clock()
-            -- Alternates active desk every 3.0 seconds so that they stand still at each desk but teleport frequently enough
+            -- Alternates active desk every 3.0 seconds
             if (now - stateStartTime > 3.0) then
                 stateStartTime = now
                 if currentPodium == "ID" then
@@ -339,8 +339,9 @@ while true do
             
             if currentPodium == "ID" and dumbo3435_25 then
                 local targetCFrame = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                -- Teleport to ID desk only if we are physically far from it (>= 6.0 studs)
-                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
+                -- Horizontal distance check (only checks X and Z, completely ignoring Y falling shifts)
+                local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
+                if horizontalDist >= 4.0 then
                     -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -355,8 +356,9 @@ while true do
                 triggerPrompt(dumbo3435_25)
             elseif currentPodium == "MD" and dumbo3435_23 then
                 local targetCFrame = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                -- Teleport to MD desk only if we are physically far from it (>= 6.0 studs)
-                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
+                -- Horizontal distance check (only checks X and Z, completely ignoring Y falling shifts)
+                local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
+                if horizontalDist >= 4.0 then
                     -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
