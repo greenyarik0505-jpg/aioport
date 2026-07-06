@@ -138,7 +138,6 @@ print("Secure the Airport: Variables initialized! Starting main loop...");
 while true do
     if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
         local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
-        -- Fixed localization bug: matches both English and Russian win/secured messages
         if (dumbo3435_50 and dumbo3435_50["Visible"]) then
             local text = dumbo3435_50["Text"]:lower()
             if string.find(text, "airport") or string.find(text, "аэропорт") or string.find(text, "secured") or string.find(text, "защитили") or string.find(text, "выиграли") then
@@ -178,14 +177,12 @@ while true do
                     local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
                     local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
                     
-                    -- Proactive weapon detection support (covers all variations of weapon/contraband variables)
                     local hasWeapon = dumbo3435_61:FindFirstChild("Weapon") or 
                                       dumbo3435_61:FindFirstChild("WeaponReal") or 
                                       dumbo3435_61:FindFirstChild("HasWeapon") or 
                                       dumbo3435_61:FindFirstChild("WeaponContraband") or
                                       dumbo3435_61:FindFirstChild("Contraband");
                     
-                    -- Debug helper to log all variable names inside RandomVariables to help find new patterns
                     if not _G.PrintedVars then
                         _G.PrintedVars = {}
                     end
@@ -313,24 +310,44 @@ while true do
         local hasFire = dumbo3435_35()
         local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
         if (not compBroken and not hasFire) then
+            -- Detect passengers at each podium to prevent unnecessary teleporting/pressing
+            local npcAtID = false
+            local npcAtMD = false
+            
+            if dumbo3435_15 then
+                for _, npc in ipairs(dumbo3435_15:GetChildren()) do
+                    local root = npc:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if dumbo3435_25 and (root.Position - dumbo3435_25.Parent.Position).Magnitude < 8 then
+                            npcAtID = true
+                        end
+                        if dumbo3435_23 and (root.Position - dumbo3435_23.Parent.Position).Magnitude < 8 then
+                            npcAtMD = true
+                        end
+                    end
+                end
+            end
+            
             if fireproximityprompt then
-                if dumbo3435_25 then fireproximityprompt(dumbo3435_25); end
-                if dumbo3435_23 then fireproximityprompt(dumbo3435_23); end
+                -- Only call fireproximityprompt if an NPC is actually standing at the podium.
+                -- This completely avoids the constant back-and-forth teleporting by the executor!
+                if npcAtID and dumbo3435_25 then fireproximityprompt(dumbo3435_25); end
+                if npcAtMD and dumbo3435_23 then fireproximityprompt(dumbo3435_23); end
             else
-                task.spawn(function()
-                    if dumbo3435_25 then
+                if npcAtID and dumbo3435_25 then
+                    task.spawn(function()
                         dumbo3435_25:InputHoldBegin();
                         task.wait(dumbo3435_25["HoldDuration"] + 0.01);
                         dumbo3435_25:InputHoldEnd();
-                    end
-                end);
-                task.spawn(function()
-                    if dumbo3435_23 then
+                    end);
+                end
+                if npcAtMD and dumbo3435_23 then
+                    task.spawn(function()
                         dumbo3435_23:InputHoldBegin();
                         task.wait(dumbo3435_23["HoldDuration"] + 0.01);
                         dumbo3435_23:InputHoldEnd();
-                    end
-                end);
+                    end);
+                end
             end
         end
     end
