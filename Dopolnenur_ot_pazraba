@@ -74,6 +74,9 @@ local dumbo3435_33 = Vector3.new(midX, 3.44, midZ);
 
 local dumbo3435_34 = {};
 
+local pressingButtons = false;
+local lastButtonPress = 0;
+
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
         if (dumbo3435_37 and dumbo3435_37:FindFirstChild("FirePart") and dumbo3435_37["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_37["FirePart"]["IsOnFire"]["Value"] == true)) then
@@ -300,54 +303,55 @@ while true do
     end
     
     if (dumbo3435_52) then
-        -- Keep player at midpoint
-        if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
-            dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
-            task.wait(0.1);
+        -- Keep player at midpoint (except when actively teleporting to buttons)
+        if (not pressingButtons) then
+            if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
+                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
+                task.wait(0.1);
+            end
         end
         
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         local hasFire = dumbo3435_35()
         local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
         if (not compBroken and not hasFire) then
-            -- Detect passengers at each podium to prevent unnecessary teleporting/pressing
-            local npcAtID = false
-            local npcAtMD = false
-            
-            if dumbo3435_15 then
-                for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                    local root = npc:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        if dumbo3435_25 and (root.Position - dumbo3435_25.Parent.Position).Magnitude < 8 then
-                            npcAtID = true
-                        end
-                        if dumbo3435_23 and (root.Position - dumbo3435_23.Parent.Position).Magnitude < 8 then
-                            npcAtMD = true
-                        end
+            local now = os.clock()
+            -- Only press buttons with a cooldown to completely eliminate rapid teleport shaking
+            if (now - lastButtonPress > 1.0) then
+                lastButtonPress = now
+                pressingButtons = true
+                
+                -- Teleport directly to ID button, press it, and wait
+                if dumbo3435_25 then
+                    dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                    task.wait(0.12)
+                    if fireproximityprompt then
+                        fireproximityprompt(dumbo3435_25)
+                    else
+                        dumbo3435_25:InputHoldBegin()
+                        task.wait(dumbo3435_25["HoldDuration"] + 0.02)
+                        dumbo3435_25:InputHoldEnd()
                     end
+                    task.wait(0.08)
                 end
-            end
-            
-            if fireproximityprompt then
-                -- Only call fireproximityprompt if an NPC is actually standing at the podium.
-                -- This completely avoids the constant back-and-forth teleporting by the executor!
-                if npcAtID and dumbo3435_25 then fireproximityprompt(dumbo3435_25); end
-                if npcAtMD and dumbo3435_23 then fireproximityprompt(dumbo3435_23); end
-            else
-                if npcAtID and dumbo3435_25 then
-                    task.spawn(function()
-                        dumbo3435_25:InputHoldBegin();
-                        task.wait(dumbo3435_25["HoldDuration"] + 0.01);
-                        dumbo3435_25:InputHoldEnd();
-                    end);
+                
+                -- Teleport directly to MD button, press it, and wait
+                if dumbo3435_23 then
+                    dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                    task.wait(0.12)
+                    if fireproximityprompt then
+                        fireproximityprompt(dumbo3435_23)
+                    else
+                        dumbo3435_23:InputHoldBegin()
+                        task.wait(dumbo3435_23["HoldDuration"] + 0.02)
+                        dumbo3435_23:InputHoldEnd()
+                    end
+                    task.wait(0.08)
                 end
-                if npcAtMD and dumbo3435_23 then
-                    task.spawn(function()
-                        dumbo3435_23:InputHoldBegin();
-                        task.wait(dumbo3435_23["HoldDuration"] + 0.01);
-                        dumbo3435_23:InputHoldEnd();
-                    end);
-                end
+                
+                -- Teleport back to waiting spot
+                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33)
+                pressingButtons = false
             end
         end
     end
