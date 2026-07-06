@@ -138,12 +138,16 @@ print("Secure the Airport: Variables initialized! Starting main loop...");
 while true do
     if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
         local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
-        if (dumbo3435_50 and dumbo3435_50["Visible"] and (dumbo3435_50["Text"] == "You secured the airport!")) then
-            task.wait(3);
-            if dumbo3435_20 then
-                dumbo3435_20:FireServer();
+        -- Fixed localization bug: matches both English and Russian win/secured messages
+        if (dumbo3435_50 and dumbo3435_50["Visible"]) then
+            local text = dumbo3435_50["Text"]:lower()
+            if string.find(text, "airport") or string.find(text, "аэропорт") or string.find(text, "secured") or string.find(text, "защитили") or string.find(text, "выиграли") then
+                task.wait(3);
+                if dumbo3435_20 then
+                    dumbo3435_20:FireServer();
+                end
+                break;
             end
-            break;
         end
     end
     
@@ -173,7 +177,28 @@ while true do
                 if (dumbo3435_59 and dumbo3435_61) then
                     local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
                     local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
-                    if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or (dumbo3435_63 and (dumbo3435_63["Value"] == true))) then
+                    
+                    -- Proactive weapon detection support (covers all variations of weapon/contraband variables)
+                    local hasWeapon = dumbo3435_61:FindFirstChild("Weapon") or 
+                                      dumbo3435_61:FindFirstChild("WeaponReal") or 
+                                      dumbo3435_61:FindFirstChild("HasWeapon") or 
+                                      dumbo3435_61:FindFirstChild("WeaponContraband") or
+                                      dumbo3435_61:FindFirstChild("Contraband");
+                    
+                    -- Debug helper to log all variable names inside RandomVariables to help find new patterns
+                    if not _G.PrintedVars then
+                        _G.PrintedVars = {}
+                    end
+                    for _, child in ipairs(dumbo3435_61:GetChildren()) do
+                        if not _G.PrintedVars[child.Name] then
+                            _G.PrintedVars[child.Name] = true
+                            print("Secure the Airport: Variable found:", child.Name, "Value:", tostring(child.Value))
+                        end
+                    end
+                    
+                    if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or 
+                        (dumbo3435_63 and (dumbo3435_63["Value"] == true)) or
+                        (hasWeapon and (hasWeapon["Value"] == true))) then
                         dumbo3435_45(dumbo3435_58);
                     else
                         dumbo3435_59["WalkSpeed"] = 200;
