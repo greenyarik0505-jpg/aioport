@@ -316,7 +316,7 @@ while true do
 
         -- Keep player at midpoint ONLY during active event resolving
         if (not pressingButtons and not hasFire and not compBroken) then
-            if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 1.5)) then
+            if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 6.0)) then
                 dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
                 task.wait(0.1);
             end
@@ -339,8 +339,8 @@ while true do
             
             if currentPodium == "ID" and dumbo3435_25 then
                 local targetCFrame = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                -- Teleport to ID desk if not already there
-                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude > 1.5 then
+                -- Teleport to ID desk only if we are physically far from it (>= 6.0 studs)
+                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
                     dumbo3435_52["CFrame"] = targetCFrame
                     task.wait(0.12)
                 end
@@ -348,8 +348,8 @@ while true do
                 triggerPrompt(dumbo3435_25)
             elseif currentPodium == "MD" and dumbo3435_23 then
                 local targetCFrame = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                -- Teleport to MD desk if not already there
-                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude > 1.5 then
+                -- Teleport to MD desk only if we are physically far from it (>= 6.0 studs)
+                if (dumbo3435_52["Position"] - targetCFrame.Position).Magnitude >= 6.0 then
                     dumbo3435_52["CFrame"] = targetCFrame
                     task.wait(0.12)
                 end
