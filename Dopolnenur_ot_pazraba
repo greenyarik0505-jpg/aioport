@@ -220,8 +220,6 @@ while true do
                         (hasWeapon and (hasWeapon["Value"] == true))) then
                         dumbo3435_45(dumbo3435_58);
                     else
-                        -- Fix WalkSpeed bug: setting to 200 was breaking pathfinding waypoints, causing passengers to get stuck.
-                        -- Setting to 32 makes them walk fast but safely triggers all waypoints and prompts.
                         dumbo3435_59["WalkSpeed"] = 32;
                     end
                 end
@@ -325,55 +323,37 @@ while true do
         
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
-            -- Detect active passenger presence at each podium desk (distance <= 12 studs, ignoring voided NPCs)
-            local npcAtID = false
-            local npcAtMD = false
-            
-            if dumbo3435_15 then
-                for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                    local root = npc:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        if root.Position.Y > -50 then
-                            local distID = (root.Position - dumbo3435_25.Parent.Position).Magnitude
-                            local distMD = (root.Position - dumbo3435_23.Parent.Position).Magnitude
-                            if distID <= 12 then
-                                npcAtID = true
-                            end
-                            if distMD <= 12 then
-                                npcAtMD = true
-                            end
-                        end
-                    end
-                end
-            end
-            
-            -- Only teleport and press if a passenger is actually waiting at that podium desk!
-            if npcAtID or npcAtMD then
-                local now = os.clock()
-                if (now - lastButtonPress > 1.2) then
-                    lastButtonPress = now
-                    pressingButtons = true
-                    
-                    -- Teleport and press ID button ONLY if a passenger is waiting there
-                    if npcAtID and dumbo3435_25 then
-                        dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                        task.wait(0.12)
+            local now = os.clock()
+            -- Teleport 1 time per second and press/spam multiple times to ensure server registers it
+            if (now - lastButtonPress > 1.0) then
+                lastButtonPress = now
+                pressingButtons = true
+                
+                -- Teleport to ID button and spam it
+                if dumbo3435_25 then
+                    dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                    task.wait(0.12)
+                    for i = 1, 5 do
                         triggerPrompt(dumbo3435_25)
-                        task.wait(0.08)
+                        task.wait(0.03)
                     end
-                    
-                    -- Teleport and press MD button ONLY if a passenger is waiting there
-                    if npcAtMD and dumbo3435_23 then
-                        dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
-                        task.wait(0.12)
-                        triggerPrompt(dumbo3435_23)
-                        task.wait(0.08)
-                    end
-                    
-                    -- Teleport back to waiting spot
-                    dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33)
-                    pressingButtons = false
+                    task.wait(0.05)
                 end
+                
+                -- Teleport to MD button and spam it
+                if dumbo3435_23 then
+                    dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                    task.wait(0.12)
+                    for i = 1, 5 do
+                        triggerPrompt(dumbo3435_23)
+                        task.wait(0.03)
+                    end
+                    task.wait(0.05)
+                end
+                
+                -- Teleport back to waiting spot
+                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33)
+                pressingButtons = false
             end
         end
     end
