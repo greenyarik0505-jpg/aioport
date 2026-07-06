@@ -39,11 +39,12 @@ local dumbo3435_29 = {
 local dumbo3435_30 = workspace["WorkspaceScriptable"]["Objects"]["FireExtinguisherPoints"];
 local dumbo3435_31 = dumbo3435_18:WaitForChild("PlayerGui");
 local dumbo3435_32 = dumbo3435_31:WaitForChild("EndingUI", 435 - (44 + 386));
-local dumbo3435_33 = Vector3.new(-(131.57999999999998 - 85), 3.44, -(24.560000000000002 - 11));
-local dumbo3435_34 = {};
 
-local pressingButtons = false;
-local lastButtonPress = 0;
+-- Calculate the exact midpoint between the two buttons so that we don't need to teleport to press them.
+local mid = (dumbo3435_23.Parent.Position + dumbo3435_25.Parent.Position) / 2
+local dumbo3435_33 = Vector3.new(mid.X, 3.44, mid.Z);
+
+local dumbo3435_34 = {};
 
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
@@ -231,48 +232,26 @@ while true do
     end
     
     if (((11320 - 7185) < (15138 - 10321)) and dumbo3435_52) then
-        -- Teleport to waiting spot if not pressing buttons and not at the spot
-        if (not pressingButtons) then
-            if (((973 - (376 + 325)) == (290 - (10 + 8))) and ((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] <= (3.5 - 2))) then
-            else
-                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
-                task.wait(442.1 - (416 + 26));
-            end
+        if (((973 - (376 + 325)) == (290 - (10 + 8))) and ((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] <= (3.5 - 2))) then
+        else
+            dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
+            task.wait(442.1 - (416 + 26));
         end
-
         if ((dumbo3435_27["Enabled"] == false) and not dumbo3435_35()) then
-            local now = os.clock();
-            if (now - lastButtonPress > 1.0) then
-                lastButtonPress = now;
-                pressingButtons = true;
-                
-                -- Teleport to ID button and press it
-                dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2, 0);
-                task.wait(0.1);
-                if fireproximityprompt then
-                    fireproximityprompt(dumbo3435_25);
-                else
+            if fireproximityprompt then
+                fireproximityprompt(dumbo3435_25);
+                fireproximityprompt(dumbo3435_23);
+            else
+                task.spawn(function()
                     dumbo3435_25:InputHoldBegin();
                     task.wait(dumbo3435_25["HoldDuration"] + 0.01);
                     dumbo3435_25:InputHoldEnd();
-                end
-                task.wait(0.1);
-                
-                -- Teleport to MD button and press it
-                dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2, 0);
-                task.wait(0.1);
-                if fireproximityprompt then
-                    fireproximityprompt(dumbo3435_23);
-                else
+                end);
+                task.spawn(function()
                     dumbo3435_23:InputHoldBegin();
-                    task.wait(dumbo3435_23["HoldDuration"] + 0.01);
+                    task.wait(dumbo3435_23["HoldDuration"] + (0.01 - 0));
                     dumbo3435_23:InputHoldEnd();
-                end
-                task.wait(0.1);
-                
-                -- Return to waiting spot
-                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
-                pressingButtons = false;
+                end);
             end
         end
     end
