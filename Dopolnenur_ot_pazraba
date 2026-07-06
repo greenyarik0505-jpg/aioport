@@ -156,6 +156,17 @@ local function dumbo3435_45(dumbo3435_46)
     end);
 end
 
+-- Helper function to calculate a natural stand position in front of the counter desk (clerk-side)
+local function getCounterStandCFrame(buttonPrompt)
+    if not buttonPrompt or not buttonPrompt.Parent then return CFrame.new(dumbo3435_33) end
+    local buttonPos = buttonPrompt.Parent.Position
+    -- Calculate direction from button to our midpoint (clerk workspace)
+    local dir = (dumbo3435_33 - buttonPos).Unit
+    -- Position player 3.2 studs away from the button towards the midpoint, directly on floor Y (3.44)
+    local targetPos = buttonPos + dir * 3.2
+    return CFrame.new(Vector3.new(targetPos.X, 3.44, targetPos.Z))
+end
+
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
@@ -344,10 +355,10 @@ while true do
             pressingButtons = true -- Disable midpoint teleportation
             
             if currentPodium == "ID" and dumbo3435_25 then
-                local targetCFrame = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                local targetCFrame = getCounterStandCFrame(dumbo3435_25)
                 -- Horizontal distance check (only checks X and Z, completely ignoring Y falling shifts)
                 local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
-                if horizontalDist >= 4.0 then
+                if horizontalDist >= 2.0 then
                     -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -361,10 +372,10 @@ while true do
                 -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_25)
             elseif currentPodium == "MD" and dumbo3435_23 then
-                local targetCFrame = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
+                local targetCFrame = getCounterStandCFrame(dumbo3435_23)
                 -- Horizontal distance check (only checks X and Z, completely ignoring Y falling shifts)
                 local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
-                if horizontalDist >= 4.0 then
+                if horizontalDist >= 2.0 then
                     -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
