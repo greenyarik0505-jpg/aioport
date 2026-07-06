@@ -86,6 +86,25 @@ local function dumbo3435_35()
     return false;
 end
 
+-- Bulletproof function to trigger ProximityPrompts using all available methods
+local function triggerPrompt(prompt)
+    if not prompt or not prompt.Enabled then return end
+    
+    -- Method 1: Roblox native input simulation (always works on all executors)
+    task.spawn(function()
+        prompt:InputHoldBegin()
+        task.wait(prompt.HoldDuration + 0.02)
+        prompt:InputHoldEnd()
+    end)
+    
+    -- Method 2: Exploit-specific fireproximityprompt
+    if fireproximityprompt then
+        pcall(function()
+            fireproximityprompt(prompt)
+        end)
+    end
+end
+
 local function dumbo3435_38(dumbo3435_39)
     local dumbo3435_40 = dumbo3435_18["Character"];
     if (not dumbo3435_40) then
@@ -227,13 +246,7 @@ while true do
                     task.wait(0.4);
                     local dumbo3435_72 = 0;
                     while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"))) and (dumbo3435_72 < 15) do
-                        if fireproximityprompt then
-                            fireproximityprompt(dumbo3435_71);
-                        else
-                            dumbo3435_71:InputHoldBegin();
-                            task.wait(dumbo3435_71["HoldDuration"] + 0.05);
-                            dumbo3435_71:InputHoldEnd();
-                        end
+                        triggerPrompt(dumbo3435_71);
                         task.wait(0.4);
                         dumbo3435_72 = dumbo3435_72 + 1;
                     end
@@ -282,13 +295,7 @@ while true do
         while dumbo3435_27["Enabled"] == true do
             local dumbo3435_79 = dumbo3435_28 and dumbo3435_28:FindFirstChild("ProximityPrompt");
             if dumbo3435_79 then
-                if fireproximityprompt then
-                    fireproximityprompt(dumbo3435_79);
-                else
-                    dumbo3435_79:InputHoldBegin();
-                    task.wait(dumbo3435_79["HoldDuration"] + 0.05);
-                    dumbo3435_79:InputHoldEnd();
-                end
+                triggerPrompt(dumbo3435_79);
             end
             task.wait(0.3);
         end
@@ -316,36 +323,23 @@ while true do
         local compBroken = dumbo3435_27 and dumbo3435_27["Enabled"] == true
         if (not compBroken and not hasFire) then
             local now = os.clock()
-            -- Only press buttons with a cooldown to completely eliminate rapid teleport shaking
-            if (now - lastButtonPress > 1.0) then
+            if (now - lastButtonPress > 1.2) then
                 lastButtonPress = now
                 pressingButtons = true
                 
-                -- Teleport directly to ID button, press it, and wait
+                -- Teleport directly to ID button, trigger it, and wait
                 if dumbo3435_25 then
                     dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2.5, 0)
                     task.wait(0.12)
-                    if fireproximityprompt then
-                        fireproximityprompt(dumbo3435_25)
-                    else
-                        dumbo3435_25:InputHoldBegin()
-                        task.wait(dumbo3435_25["HoldDuration"] + 0.02)
-                        dumbo3435_25:InputHoldEnd()
-                    end
+                    triggerPrompt(dumbo3435_25)
                     task.wait(0.08)
                 end
                 
-                -- Teleport directly to MD button, press it, and wait
+                -- Teleport directly to MD button, trigger it, and wait
                 if dumbo3435_23 then
                     dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2.5, 0)
                     task.wait(0.12)
-                    if fireproximityprompt then
-                        fireproximityprompt(dumbo3435_23)
-                    else
-                        dumbo3435_23:InputHoldBegin()
-                        task.wait(dumbo3435_23["HoldDuration"] + 0.02)
-                        dumbo3435_23:InputHoldEnd()
-                    end
+                    triggerPrompt(dumbo3435_23)
                     task.wait(0.08)
                 end
                 
