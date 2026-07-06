@@ -1,32 +1,6 @@
---[[
- .____                  ________ ___.    _____                           __                
- |    |    __ _______   \_____  \\_ |___/ ____\_ __  ______ ____ _____ _/  |_  ___________ 
- |    |   |  |  \__  \   /   |   \| __ \   __\  |  \/  ___// ___\\__  \\   __\/  _ \_  __ \
- |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
- |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
-         \/          \/         \/    \/                \/     \/     \/                   
-          \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
-
-]]--
-
 -- made by dumbo3435
+-- deobfuscated & modified by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
-
-local dumbo3435_1 = string.char;
-local dumbo3435_2 = string.byte;
-local dumbo3435_3 = string.sub;
-local dumbo3435_4 = bit32 or bit;
-local dumbo3435_5 = dumbo3435_4.bxor;
-local dumbo3435_6 = table.concat;
-local dumbo3435_7 = table.insert;
-
-local function dumbo3435_8(dumbo3435_9, dumbo3435_10)
-    local dumbo3435_11 = {};
-    for dumbo3435_12 = 1, #dumbo3435_9 do
-        dumbo3435_7(dumbo3435_11, dumbo3435_1(dumbo3435_5(dumbo3435_2(dumbo3435_3(dumbo3435_9, dumbo3435_12, dumbo3435_12 + 1)), dumbo3435_2(dumbo3435_3(dumbo3435_10, 1 + (dumbo3435_12 % #dumbo3435_10), 1 + (dumbo3435_12 % #dumbo3435_10) + 1))) % 256));
-    end
-    return dumbo3435_6(dumbo3435_11);
-end
 
 repeat
     task.wait();
@@ -34,43 +8,46 @@ until game:IsLoaded()
 
 repeat
     task.wait();
-until workspace:FindFirstChild(dumbo3435_8("\252\194\203", "\126\177\163\187\69\134\219\167")) 
+until workspace:FindFirstChild("Map") 
 
 task.wait(1);
-print(dumbo3435_8("\48\200\41\208\238\38\141\62\205\249\99\204\35\215\236\44\223\62\133\240\44\204\46\192\248\98\141\54\133\241\34\201\47\133\254\58\141\46\208\241\33\194\121\145\175\118", "\156\67\173\74\165"));
+print("secure the airport loaded! | made by dumbo3435 | fixed by Antigravity");
 
-local dumbo3435_13 = game:GetService(dumbo3435_8("\6\178\89\26\181\37\71\32\178\77\37\168\41\84\53\176\76", "\38\84\215\41\118\220\70"));
-local dumbo3435_14 = game:GetService(dumbo3435_8("\96\26\35\11\251\66\5", "\158\48\118\66\114"));
-local dumbo3435_15 = workspace[dumbo3435_8("\156\43\2\61\96\181\250\168\33\35\53\97\172\235\191\37\18\58\118", "\155\203\68\112\86\19\197")][dumbo3435_8("\117\201\57\238\65\127\224", "\152\38\189\86\156\32\24\133")][dumbo3435_8("\210\88\181\75\253\91\148\82\243\69\166\65\249", "\38\156\55\199")][dumbo3435_8("\134\77\95\31\28\102\241\80\184\124\127\45", "\35\200\29\28\72\115\20\154")];
-local dumbo3435_16 = workspace[dumbo3435_8("\46\176\195\212\158\60\53\26\186\226\220\159\37\36\13\190\211\211\136", "\84\121\223\177\191\237\76")][dumbo3435_8("\136\66\198\178\59\87\53", "\161\219\54\169\192\90\48\80")][dumbo3435_8("\103\77\18\40\72\78\51\49\70\80\1\34\76", "\69\41\34\96")][dumbo3435_8("\148\204\196\30\11\39\185\237\231\41\53\36\174\200\196\26\3\40\185", "\75\220\163\183\106\98")];
-local dumbo3435_17 = workspace[dumbo3435_8("\53\181\153\60\202\18\187\136\50\234\1\168\130\39\205\3\184\135\50", "\185\98\218\235\87")][dumbo3435_8("\248\40\40\244\223\173\206", "\202\171\92\71\134\190")][dumbo3435_8("\13\200\63\137\58\213\41\154\26\213\35\154\40\198\41", "\232\73\161\76")];
-local dumbo3435_18 = dumbo3435_14[dumbo3435_8("\151\214\65\92\18\139\213\67\68\27\169", "\126\219\185\34\61")];
-local dumbo3435_19 = workspace[dumbo3435_8("\47\219\76\96\123\121\231\196\13\195\91\96\127", "\135\108\174\62\18\30\23\147")];
-local dumbo3435_20 = dumbo3435_13[dumbo3435_8("\132\236\57\196\13\188\48\194\165", "\167\214\137\74\171\120\206\83")][dumbo3435_8("\174\230\55\83\236\180", "\199\235\144\82\61\152")][dumbo3435_8("\36\26\176\46\9\2", "\75\103\118\217")][dumbo3435_8("\229\85\115\31\141\17\235\91\114\22\160", "\126\167\52\16\116\217")];
-local dumbo3435_21 = dumbo3435_13[dumbo3435_8("\250\43\51\143\161\11\255\205\61", "\156\168\78\64\224\212\121")][dumbo3435_8("\34\248\160\192\19\253", "\174\103\142\197")][dumbo3435_8("\117\36\86\61\43\74", "\152\54\72\63\88\69\62")][dumbo3435_8("\242\205\252\89\241\220\250\85\218\195\251\85\199\204\235\78", "\60\180\164\142")];
-local dumbo3435_22 = workspace[dumbo3435_8("\111\81\23\34\52\253\19\91\91\54\42\53\228\2\76\95\7\37\34", "\114\56\62\101\73\71\141")][dumbo3435_8("\151\235\209\193\187\253\200", "\164\216\137\187")][dumbo3435_8("\240\243\37\166\169\240\59\221\226\56\167\171\237", "\107\178\134\81\210\198\158")][dumbo3435_8("\26\27\150\210\165\54\62\141\194\163\45\3\175\226", "\202\88\110\226\166")];
-local dumbo3435_23 = dumbo3435_22[dumbo3435_8("\225\26\150\227\197\205\46\129\244\207\211\27", "\170\163\111\226\151")][dumbo3435_8("\51\37\166\44\65\57\25\3\53\161\43", "\73\113\80\210\88\46\87")][dumbo3435_8("\177\62\194\10\238\140\37\217\11\215\147\35\192\2\243", "\135\225\76\173\114")];
-local dumbo3435_24 = workspace[dumbo3435_8("\45\226\170\187\191\173\166\25\232\139\179\190\180\183\14\236\186\188\169", "\199\122\141\216\208\204\221")][dumbo3435_8("\130\223\26\245\123\226\190", "\150\205\189\112\144\24")][dumbo3435_8("\7\145\171\88\11\134\33\31\33\141\170\65\23", "\112\69\228\223\44\100\232\113")][dumbo3435_8("\246\10\19\199\185\114\182\219\27\14\198\187\85\162", "\230\180\127\103\179\214\28")];
-local dumbo3435_25 = dumbo3435_24[dumbo3435_8("\174\16\75\82\235\79\193\143\6\90\86\240", "\128\236\101\63\38\132\33")][dumbo3435_8("\142\188\5\80\185\229\255\190\172\2\87", "\175\204\201\113\36\214\139")][dumbo3435_8("\119\222\58\196\13\74\197\33\197\52\85\195\56\204\16", "\100\39\172\85\188")];
-local dumbo3435_26 = workspace[dumbo3435_8("\154\119\171\139\32\189\121\186\133\0\174\106\176\144\39\172\122\181\133", "\83\205\24\217\224")][dumbo3435_8("\201\199\199\56\229\209\222", "\93\134\165\173")][dumbo3435_8("\157\253\204\210\47\218\183\108\173", "\30\222\146\161\162\90\174\210")][dumbo3435_8("\198\65\125\26\240\90\117\24\213\65\103\15\247", "\106\133\46\16")];
-local dumbo3435_27 = dumbo3435_26[dumbo3435_8("\112\41\116\244\86\73\95\40\103", "\32\56\64\19\156\58")];
-local dumbo3435_28 = dumbo3435_26[dumbo3435_8("\119\199\235\95\78\253\146", "\224\58\168\133\54\58\146")][dumbo3435_8("\120\66\95\252\118\142\138\14\87\66", "\107\57\54\43\157\21\230\231")];
+local dumbo3435_13 = game:GetService("ReplicatedStorage");
+local dumbo3435_14 = game:GetService("Players");
+local dumbo3435_15 = workspace["WorkspaceScriptable"]["Storage"]["NormalStorage"]["NPCWorkspace"];
+local dumbo3435_16 = workspace["WorkspaceScriptable"]["Storage"]["NormalStorage"]["HostileNPCWorkspace"];
+local dumbo3435_17 = workspace["WorkspaceScriptable"]["Storage"]["DisasterStorage"];
+local dumbo3435_18 = dumbo3435_14["LocalPlayer"];
+local dumbo3435_19 = workspace["CurrentCamera"];
+local dumbo3435_20 = dumbo3435_13["Resources"]["Events"]["Client"]["BackToLobby"];
+local dumbo3435_21 = dumbo3435_13["Resources"]["Events"]["Client"]["FireExtinguisher"];
+local dumbo3435_22 = workspace["WorkspaceScriptable"]["Objects"]["ButtonPodiums"]["ButtonPodiumMD"];
+local dumbo3435_23 = dumbo3435_22["ButtonAccept"]["ButtonPress"]["ProximityPrompt"];
+local dumbo3435_24 = workspace["WorkspaceScriptable"]["Objects"]["ButtonPodiums"]["ButtonPodiumID"];
+local dumbo3435_25 = dumbo3435_24["ButtonAccept"]["ButtonPress"]["ProximityPrompt"];
+local dumbo3435_26 = workspace["WorkspaceScriptable"]["Objects"]["Computers"]["ComputerPower"];
+local dumbo3435_27 = dumbo3435_26["Highlight"];
+local dumbo3435_28 = dumbo3435_26["Monitor"]["Attachment"];
 
 local dumbo3435_29 = {
-    workspace[dumbo3435_8("\236\132\3\254\170\204\206\216\142\34\246\171\213\223\207\138\19\249\188", "\175\187\235\113\149\217\188")][dumbo3435_8("\19\173\139\73\224\109\107", "\24\92\207\225\44\131\25")][dumbo3435_8("\108\210\170\78\26\122\78\241\177\66\8", "\29\43\179\216\44\123")][dumbo3435_8("\154\216\50\78\188\222\37\110\180\215\113", "\44\221\185\64")],
-    workspace[dumbo3435_8("\54\232\90\84\96\17\230\75\90\64\2\245\65\79\103\0\229\68\90", "\19\97\135\40\63")][dumbo3435_8("\129\94\57\62\44\37\189", "\81\206\60\83\91\79")][dumbo3435_8("\105\170\194\112\46\196\72\134\71\165\195", "\196\46\203\176\18\79\163\45")][dumbo3435_8("\159\35\108\28\37\252\234\154\43\112\76", "\143\216\66\30\126\68\155")],
-    workspace[dumbo3435_8("\157\199\31\192\214\179\214\226\175\251\14\217\204\179\195\224\168\196\8", "\129\202\168\109\171\165\195\183")][dumbo3435_8("\13\90\61\221\221\0\245", "\134\66\56\87\184\190\116")][dumbo3435_8("\27\48\27\185\24\236\36\23\53\63\26", "\85\92\81\105\219\121\139\65")][dumbo3435_8("\218\178\66\71\125\216\248\145\89\75\47", "\191\157\211\48\37\28")]
+    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin1"],
+    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin2"],
+    workspace["WorkspaceScriptable"]["Objects"]["GarbageBins"]["GarbageBin3"]
 };
 
-local dumbo3435_30 = workspace[dumbo3435_8("\232\16\230\23\41\207\30\247\25\9\220\13\253\12\46\222\29\248\25", "\90\191\127\148\124")][dumbo3435_8("\87\133\36\18\123\147\61", "\119\24\231\78")][dumbo3435_8("\164\36\183\79\249\88\5\139\35\162\95\213\83\25\135\63\149\69\213\78\5\145", "\113\226\77\197\42\188\32")];
-local dumbo3435_31 = dumbo3435_18:WaitForChild(dumbo3435_8("\10\26\245\172\63\4\211\160\51", "\213\90\118\148"));
-local dumbo3435_32 = dumbo3435_31:WaitForChild(dumbo3435_8("\126\32\176\95\67\92\27\157", "\45\59\78\212\54"), 435 - (44 + 386));
+local dumbo3435_30 = workspace["WorkspaceScriptable"]["Objects"]["FireExtinguisherPoints"];
+local dumbo3435_31 = dumbo3435_18:WaitForChild("PlayerGui");
+local dumbo3435_32 = dumbo3435_31:WaitForChild("EndingUI", 435 - (44 + 386));
 local dumbo3435_33 = Vector3.new(-(131.57999999999998 - 85), 3.44, -(24.560000000000002 - 11));
 local dumbo3435_34 = {};
 
+local pressingButtons = false;
+local lastButtonPress = 0;
+
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
-        if ((100 <= (993 + 2130)) and dumbo3435_37:FindFirstChild(dumbo3435_8("\54\95\145\142\182\47\191\228", "\144\112\54\227\235\230\78\205")) and dumbo3435_37[dumbo3435_8("\149\33\29\249\224\90\161\60", "\59\211\72\111\156\176")]:FindFirstChild(dumbo3435_8("\103\148\204\35\104\142\241\40", "\77\46\231\131")) and (dumbo3435_37[dumbo3435_8("\156\93\164\69\138\85\164\84", "\32\218\52\214")][dumbo3435_8("\103\4\30\166\215\185\87\95", "\58\46\119\81\200\145\208\37")][dumbo3435_8("\29\141\60\185\172", "\86\75\236\80\204\201\221")] == true)) then
+        if ((100 <= (993 + 2130)) and dumbo3435_37:FindFirstChild("FirePart") and dumbo3435_37["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_37["FirePart"]["IsOnFire"]["Value"] == true)) then
             return true;
         end
     end
@@ -78,11 +55,11 @@ local function dumbo3435_35()
 end
 
 local function dumbo3435_38(dumbo3435_39)
-    local dumbo3435_40 = dumbo3435_18[dumbo3435_8("\81\73\118\151\255\136\102\68\101", "\235\18\33\23\229\158")];
+    local dumbo3435_40 = dumbo3435_18["Character"];
     if (not dumbo3435_40 or ((3526 - 2157) > (4084 + 903))) then
         return nil;
     end
-    local dumbo3435_41 = dumbo3435_40:FindFirstChildOfClass(dumbo3435_8("\120\175\204\186\94\181\200\191", "\219\48\218\161"));
+    local dumbo3435_41 = dumbo3435_40:FindFirstChildOfClass("Humanoid");
     if not dumbo3435_41 then
         return nil;
     end
@@ -90,7 +67,7 @@ local function dumbo3435_38(dumbo3435_39)
     if (dumbo3435_42 or ((5212 - (555 + 64)) <= 2672)) then
         return dumbo3435_42;
     end
-    local dumbo3435_43 = dumbo3435_18[dumbo3435_8("\198\112\127\66\203\78\227\239", "\128\132\17\28\41\187\47")]:FindFirstChild(dumbo3435_39);
+    local dumbo3435_43 = dumbo3435_18["Backpack"]:FindFirstChild(dumbo3435_39);
     if (dumbo3435_43 or ((1794 - (857 + 74)) >= (5722 - (116 + 1022)))) then
         dumbo3435_41:EquipTool(dumbo3435_43);
         local dumbo3435_44 = 0;
@@ -106,20 +83,20 @@ local function dumbo3435_45(dumbo3435_46)
     if dumbo3435_34[dumbo3435_46] then
         return;
     end
-    local dumbo3435_47 = dumbo3435_46:FindFirstChild(dumbo3435_8("\41\39\11\59\83\14\59\2\8\82\14\38\54\59\79\21", "\61\97\82\102\90"));
-    local dumbo3435_48 = dumbo3435_46:FindFirstChildOfClass(dumbo3435_8("\132\59\166\74\201\88\23\13", "\105\204\78\203\43\167\55\126"));
+    local dumbo3435_47 = dumbo3435_46:FindFirstChild("HumanoidRootPart");
+    local dumbo3435_48 = dumbo3435_46:FindFirstChildOfClass("Humanoid");
     if (not dumbo3435_47 or ((2095 - (214 + 713)) > (790 + 2366))) then
         return;
     end
     dumbo3435_34[dumbo3435_46] = true;
     if (dumbo3435_48 or ((114 + 610) >= (2545 - (282 + 595)))) then
-        dumbo3435_48[dumbo3435_8("\146\171\47\21\32\20\194\84\161", "\49\197\202\67\126\115\100\167")] = 0 - 0;
-        dumbo3435_48[dumbo3435_8("\7\87\222\61\134\89\76\58\104\203\40\142\82", "\62\87\59\191\73\224\54")] = true;
+        dumbo3435_48["WalkSpeed"] = 0 - 0;
+        dumbo3435_48["PlatformStand"] = true;
     end
     task.spawn(function()
         local dumbo3435_49 = 0;
-        while dumbo3435_46[dumbo3435_8("\215\3\232\204\233\22", "\169\135\98\154")] and (dumbo3435_47[dumbo3435_8("\251\120\55\93\233\58\199\197", "\168\171\23\68\52\157\83")]['Y'] > -100) and (dumbo3435_49 < (177 - 127)) do
-            dumbo3435_47[dumbo3435_8("\215\87\231\172\40\40", "\231\148\17\149\205\69\77")] = dumbo3435_47[dumbo3435_8("\163\129\213\250\90\250", "\159\224\199\167\155\55")] - Vector3.new(859 - (814 + 45), 1787 - (1523 + 114), 0 + 0);
+        while dumbo3435_46["Parent"] and (dumbo3435_47["Position"]['Y'] > -100) and (dumbo3435_49 < (177 - 127)) do
+            dumbo3435_47["CFrame"] = dumbo3435_47["CFrame"] - Vector3.new(859 - (814 + 45), 1787 - (1523 + 114), 0 + 0);
             task.wait(0.1 + 0);
             dumbo3435_49 = dumbo3435_49 + (1 - 0);
         end
@@ -128,20 +105,20 @@ local function dumbo3435_45(dumbo3435_46)
 end
 
 while true do
-    if (dumbo3435_32 and dumbo3435_32[dumbo3435_8("\210\253\61\208\251\246\56", "\178\151\147\92")] and dumbo3435_32:FindFirstChild(dumbo3435_8("\169\243\72\59\28\75\77\133\243\106\32\19\65\127", "\26\236\157\44\82\114\44"))) then
-        local dumbo3435_50 = dumbo3435_32[dumbo3435_8("\15\32\209\82\36\41\226\82\36\8\199\90\39\43", "\59\74\78\181")]:FindFirstChild(dumbo3435_8("\7\208\72\110\188\53", "\211\69\177\58\58")) and dumbo3435_32[dumbo3435_8("\146\235\125\252\231\204\128\236\119\211\251\202\186\224", "\171\215\133\25\149\137")][dumbo3435_8("\195\201\32\206\224\32", "\34\129\168\82\154\143\80\156")]:FindFirstChild(dumbo3435_8("\177\183\43\31\100\79\139\128\190", "\233\229\210\83\107\40\46"));
-        if (((1493 - (68 + 997)) < 1804) and dumbo3435_50 and dumbo3435_50[dumbo3435_8("\247\75\33\223\7\205\71", "\101\161\34\82\182")] and (dumbo3435_50[dumbo3435_8("\220\8\65\234", "\78\136\109\57\158\187\130\226")] == dumbo3435_8("\7\48\236\177\45\58\250\228\44\58\253\177\42\55\252\177\63\54\235\225\49\45\237\176", "\145\94\95\153"))) then
+    if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
+        local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
+        if (((1493 - (68 + 997)) < 1804) and dumbo3435_50 and dumbo3435_50["Visible"] and (dumbo3435_50["Text"] == "You secured the airport!")) then
             task.wait(1275 - (226 + 1044));
             dumbo3435_20:FireServer();
             break;
         end
     end
     
-    local dumbo3435_51 = dumbo3435_18[dumbo3435_8("\222\197\21\199\79\180\233\200\6", "\215\157\173\116\181\46")];
-    local dumbo3435_52 = dumbo3435_51 and dumbo3435_51:FindFirstChild(dumbo3435_8("\29\161\134\243\212\58\189\143\192\213\58\160\187\243\200\33", "\186\85\212\235\146"));
+    local dumbo3435_51 = dumbo3435_18["Character"];
+    local dumbo3435_52 = dumbo3435_51 and dumbo3435_51:FindFirstChild("HumanoidRootPart");
     
     for dumbo3435_53, dumbo3435_54 in dumbo3435_17:GetChildren() do
-        if ((dumbo3435_54[dumbo3435_8("\236\128\27\251", "\56\162\225\118\158\89\142")] == dumbo3435_8("\121\11\197\162\59\246\108\38", "\184\60\101\160\207\66")) or (dumbo3435_54[dumbo3435_8("\31\131\113\185", "\220\81\226\28")] == dumbo3435_8("\53\230\167\245\239\202\10\251\178\216", "\167\115\181\226\155\138")) or (dumbo3435_54[dumbo3435_8("\204\35\234\89", "\166\130\66\135\60\27\17")] == dumbo3435_8("\102\69\221\102\30\116\105", "\80\36\42\174\21")) or (3325 > (20086 - 15473))) then
+        if ((dumbo3435_54["Name"] == "EnemyNPC") or (dumbo3435_54["Name"] == "FSEnemyNPC") or (dumbo3435_54["Name"] == "BossNPC") or (3325 > (20086 - 15473))) then
             dumbo3435_45(dumbo3435_54);
         end
     end
@@ -152,16 +129,16 @@ while true do
     
     for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
         if (not dumbo3435_34[dumbo3435_58] or ((5067 - (32 + 85)) <= 4553)) then
-            local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass(dumbo3435_8("\102\5\58\123\64\31\62\126", "\26\46\112\87"));
-            local dumbo3435_60 = dumbo3435_58:FindFirstChild(dumbo3435_8("\137\49\164\100\186\173\81\189\188\48", "\212\217\67\203\20\223\223\37"));
-            local dumbo3435_61 = dumbo3435_60 and dumbo3435_60:FindFirstChild(dumbo3435_8("\136\140\166\214\181\128\158\211\168\132\169\208\182\136\187", "\178\218\237\200"));
+            local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
+            local dumbo3435_60 = dumbo3435_58:FindFirstChild("Properties");
+            local dumbo3435_61 = dumbo3435_60 and dumbo3435_60:FindFirstChild("RandomVariables");
             if ((dumbo3435_59 and dumbo3435_61) or ((561 + 11) > (995 + 3491))) then
-                local dumbo3435_62 = dumbo3435_61:FindFirstChild(dumbo3435_8("\144\180\237\213\134\180\245\195\166\186\244\196", "\176\214\213\134"));
-                local dumbo3435_63 = dumbo3435_61:FindFirstChild(dumbo3435_8("\215\162\184\192\186\87\91\245\163\178\230\173\87\85", "\57\148\205\214\180\200\54"));
-                if ((1404 == 1404) and ((dumbo3435_62 and (dumbo3435_62[dumbo3435_8("\36\252\57\33\115", "\22\114\157\85\84")] == true)) or (dumbo3435_63 and (dumbo3435_63[dumbo3435_8("\242\202\31\209\88", "\200\164\171\115\164\61\150")] == true)))) then
+                local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
+                local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
+                if ((1404 == 1404) and ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or (dumbo3435_63 and (dumbo3435_63["Value"] == true)))) then
                     dumbo3435_45(dumbo3435_58);
                 else
-                    dumbo3435_59[dumbo3435_8("\137\245\15\78\176\174\241\6\65", "\227\222\148\99\37")] = 1157 - (892 + 65);
+                    dumbo3435_59["WalkSpeed"] = 1157 - (892 + 65);
                 end
             end
         end
@@ -169,28 +146,28 @@ while true do
     
     local dumbo3435_64 = nil;
     for dumbo3435_65, dumbo3435_66 in dumbo3435_29 do
-        if (dumbo3435_66:FindFirstChild(dumbo3435_8("\21\91\64\243\201\50\64\70", "\153\83\50\50\150")) and dumbo3435_66[dumbo3435_8("\123\127\97\25\67\170\95\73", "\45\61\22\19\124\19\203")]:FindFirstChild(dumbo3435_8("\232\1\34\251\36\121\171\196", "\217\161\114\109\149\98\16")) and (dumbo3435_66[dumbo3435_8("\52\41\42\121\140\117\0\52", "\20\114\64\88\28\220")][dumbo3435_8("\24\18\253\186\222\217\175\52", "\221\81\97\178\212\152\176")][dumbo3435_8("\251\230\17\238\31", "\122\173\135\125\155")] == true)) then
+        if (dumbo3435_66:FindFirstChild("FirePart") and dumbo3435_66["FirePart"]:FindFirstChild("IsOnFire") and (dumbo3435_66["FirePart"]["IsOnFire"]["Value"] == true)) then
             dumbo3435_64 = dumbo3435_66;
             break;
         end
     end
     
     if (((6357 - 3692) <= (7269 - 3336)) and dumbo3435_64 and dumbo3435_52) then
-        local dumbo3435_67 = dumbo3435_51:FindFirstChild(dumbo3435_8("\162\200\18\188\127\20\208\144\200\14\190\42\56\219\140\196\18", "\168\228\161\96\217\95\81")) or dumbo3435_18[dumbo3435_8("\249\208\45\87\63\86\216\218", "\55\187\177\78\60\79")]:FindFirstChild(dumbo3435_8("\11\199\77\238\6\234\152\57\199\81\236\83\198\147\37\203\77", "\224\77\174\63\139\38\175"));
+        local dumbo3435_67 = dumbo3435_51:FindFirstChild("Fire Extinguisher") or dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher");
         if (((6007 - 2734) == (3623 - (87 + 263))) and not dumbo3435_67) then
             for dumbo3435_68, dumbo3435_69 in dumbo3435_30:GetChildren() do
-                local dumbo3435_70 = dumbo3435_69:FindFirstChild(dumbo3435_8("\173\79\76\43\150\64\91\58\180\64\74\58", "\78\228\33\56"));
-                local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild(dumbo3435_8("\254\108\189\27\140\195\119\166\26\181\220\113\191\19\145", "\229\174\30\210\99"));
-                if (((5247 - (630 + 793)) > (589 - (67 + 113))) and dumbo3435_71 and dumbo3435_71[dumbo3435_8("\62\227\135\83\225\56\61", "\89\123\141\230\49\141\93")]) then
-                    dumbo3435_52[dumbo3435_8("\208\87\228\13\29\79", "\42\147\17\150\108\112")] = dumbo3435_69:GetPivot() + Vector3.new(0, 2 + 0, 0);
+                local dumbo3435_70 = dumbo3435_69:FindFirstChild("InteractPart");
+                local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild("ProximityPrompt");
+                if (((5247 - (630 + 793)) > (589 - (67 + 113))) and dumbo3435_71 and dumbo3435_71["Enabled"]) then
+                    dumbo3435_52["CFrame"] = dumbo3435_69:GetPivot() + Vector3.new(0, 2 + 0, 0);
                     task.wait(0.4);
                     local dumbo3435_72 = 0 - 0;
-                    while not (dumbo3435_51:FindFirstChild(dumbo3435_8("\41\175\63\122\167\205\23\178\36\113\224\253\6\181\37\122\245", "\136\111\198\77\31\135")) or dumbo3435_18[dumbo3435_8("\32\8\164\93\173\229\20\162", "\201\98\105\199\54\221\132\119")]:FindFirstChild(dumbo3435_8("\159\5\145\36\66\16\180\173\5\141\38\23\60\191\177\9\145", "\204\217\108\227\65\98\85"))) and (dumbo3435_72 < (6 + 9)) do
+                    while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher")) and (dumbo3435_72 < (6 + 9)) do
                         if (fireproximityprompt or (3748 < (7615 - 5403))) then
                             fireproximityprompt(dumbo3435_71);
                         else
                             dumbo3435_71:InputHoldBegin();
-                            task.wait(dumbo3435_71[dumbo3435_8("\118\204\249\225\8\213\76\194\225\236\35\206", "\160\62\163\149\133\76")] + (1747.05 - (760 + 987)));
+                            task.wait(dumbo3435_71["HoldDuration"] + (1747.05 - (760 + 987)));
                             dumbo3435_71:InputHoldEnd();
                         end
                         task.wait(0.4 + 0);
@@ -201,26 +178,26 @@ while true do
             end
         end
         
-        local dumbo3435_73 = dumbo3435_38(dumbo3435_8("\240\169\31\42\131\243\184\25\38\205\209\181\4\60\203\211\178", "\163\182\192\109\79"));
-        if (((3039 - (802 + 150)) == (2853 - (745 + 21))) and dumbo3435_73 and dumbo3435_73:FindFirstChild(dumbo3435_8("\0\41\7\199\249\49", "\149\84\70\96\160"))) then
-            local dumbo3435_74 = dumbo3435_64:FindFirstChild(dumbo3435_8("\30\15\31\232\8\7\31\249", "\141\88\102\109")) or dumbo3435_64;
-            local dumbo3435_75 = dumbo3435_74[dumbo3435_8("\131\92\217\121\14\52\90\207", "\161\211\51\170\16\122\93\53")];
+        local dumbo3435_73 = dumbo3435_38("Fire Extinguisher");
+        if (((3039 - (802 + 150)) == (2853 - (745 + 21))) and dumbo3435_73 and dumbo3435_73:FindFirstChild("Toggle")) then
+            local dumbo3435_74 = dumbo3435_64:FindFirstChild("FirePart") or dumbo3435_64;
+            local dumbo3435_75 = dumbo3435_74["Position"];
             local dumbo3435_76 = dumbo3435_75 + Vector3.new(0, 1 + 1, 4);
-            dumbo3435_52[dumbo3435_8("\216\136\160\41\246\171", "\72\155\206\210")] = CFrame.lookAt(dumbo3435_76, dumbo3435_75);
-            dumbo3435_19[dumbo3435_8("\101\92\70\15\62\67", "\83\38\26\52\110")] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 5 - 3), dumbo3435_75);
+            dumbo3435_52["CFrame"] = CFrame.lookAt(dumbo3435_76, dumbo3435_75);
+            dumbo3435_19["CFrame"] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 5 - 3), dumbo3435_75);
             task.wait(0.3);
             dumbo3435_21:FireServer(dumbo3435_73, true);
-            dumbo3435_73[dumbo3435_8("\108\24\32\65\84\18", "\38\56\119\71")]:FireServer(true);
+            dumbo3435_73["Toggle"]:FireServer(true);
             local dumbo3435_77 = 0 - 0;
-            while dumbo3435_74:FindFirstChild(dumbo3435_8("\218\252\119\216\3\95\225\234", "\54\147\143\56\182\69")) and (dumbo3435_74[dumbo3435_8("\255\146\208\71\249\223\147\250", "\191\182\225\159\41")][dumbo3435_8("\29\19\36\64\142", "\162\75\114\72\53\235\231")] == true) and (dumbo3435_77 < 35) do
+            while dumbo3435_74:FindFirstChild("IsOnFire") and (dumbo3435_74["IsOnFire"]["Value"] == true) and (dumbo3435_77 < 35) do
                 task.wait(0.2);
                 dumbo3435_77 = dumbo3435_77 + 1 + 0;
             end
             dumbo3435_21:FireServer(dumbo3435_73, false);
-            dumbo3435_73[dumbo3435_8("\184\51\67\229\95\7", "\98\236\92\36\130\51")]:FireServer(false);
-            local dumbo3435_78 = workspace[dumbo3435_8("\147\22\30\177\86\184\180\51\161\42\15\168\76\184\161\49\166\21\9", "\80\196\121\108\218\37\200\213")][dumbo3435_8("\42\114\11\115\110\29\153\5\125\22\118\74\2\153", "\234\96\19\98\31\43\110")][dumbo3435_8("\54\13\91\212\163\124\142\20\77", "\235\102\127\50\167\204\18")]:FindFirstChild(dumbo3435_8("\120\180\248\34\74\33\89\165\199\44\75\58\96\160\231\55", "\78\48\193\149\67\36"));
+            dumbo3435_73["Toggle"]:FireServer(false);
+            local dumbo3435_78 = workspace["WorkspaceScriptable"]["JailEssentials"]["Prisoner2"]:FindFirstChild("HumanoidRootPart");
             if (dumbo3435_78 or ((2177 - (915 + 82)) == (6172 - 3992))) then
-                dumbo3435_52[dumbo3435_8("\19\56\146\25\76\53", "\33\80\126\224\120")] = dumbo3435_78[dumbo3435_8("\207\142\17\197\81\233", "\60\140\200\99\164")];
+                dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
             end
             task.wait(0.5 - 0);
             continue;
@@ -229,51 +206,73 @@ while true do
         end
     end
     
-    if (((34 + 4056) < (2711 + 1942)) and (dumbo3435_27[dumbo3435_8("\162\250\5\36\174\130\240", "\194\231\148\100\70")] == true) and dumbo3435_52) then
-        dumbo3435_52[dumbo3435_8("\101\106\211\162\251\205", "\168\38\44\161\195\150")] = dumbo3435_26:GetPivot() + Vector3.new(1055 - (87 + 968), 3, 0 - 0);
+    if (((34 + 4056) < (2711 + 1942)) and (dumbo3435_27["Enabled"] == true) and dumbo3435_52) then
+        dumbo3435_52["CFrame"] = dumbo3435_26:GetPivot() + Vector3.new(1055 - (87 + 968), 3, 0 - 0);
         task.wait(1187.3 - (1069 + 118));
-        while dumbo3435_27[dumbo3435_8("\165\242\131\116\60\237\178", "\118\224\156\226\22\80\136\214")] == true do
-            local dumbo3435_79 = dumbo3435_28:FindFirstChild(dumbo3435_8("\114\252\86\152\75\227\80\148\91\222\75\143\79\254\77", "\224\34\142\57"));
+        while dumbo3435_27["Enabled"] == true do
+            local dumbo3435_79 = dumbo3435_28:FindFirstChild("ProximityPrompt");
             if dumbo3435_79 then
                 if (fireproximityprompt or (3404 > (10215 - 5712))) then
                     fireproximityprompt(dumbo3435_79);
                 else
                     dumbo3435_79:InputHoldBegin();
-                    task.wait(dumbo3435_79[dumbo3435_8("\246\168\201\217\87\228\79\15\202\174\202\211", "\110\190\199\165\189\19\145\61")] + (0.05 - 0));
+                    task.wait(dumbo3435_79["HoldDuration"] + (0.05 - 0));
                     dumbo3435_79:InputHoldEnd();
                 end
             end
             task.wait(0.3 + 0);
         end
-        local dumbo3435_78 = workspace[dumbo3435_8("\237\228\101\227\152\215\219\232\114\219\136\213\211\251\99\233\137\203\223", "\167\186\139\23\136\235")][dumbo3435_8("\48\180\129\1\63\166\155\8\20\161\129\12\22\166", "\109\122\213\232")][dumbo3435_8("\222\229\171\35\225\249\167\34\188", "\80\142\151\194")]:FindFirstChild(dumbo3435_8("\43\211\122\77\13\201\126\72\49\201\120\88\51\199\101\88", "\44\99\166\23"));
+        local dumbo3435_78 = workspace["WorkspaceScriptable"]["JailEssentials"]["Prisoner2"]:FindFirstChild("HumanoidRootPart");
         if (dumbo3435_78 or ((4711 - 2059) < (195 + 1))) then
-            dumbo3435_52[dumbo3435_8("\95\209\59\55\62\161", "\196\28\151\73\86\83")] = dumbo3435_78[dumbo3435_8("\208\37\59\17\143\93", "\22\147\99\73\112\226\56\120")];
+            dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
         end
         task.wait(791.5 - (368 + 423));
         continue;
     end
     
     if (((11320 - 7185) < (15138 - 10321)) and dumbo3435_52) then
-        if (((973 - (376 + 325)) == (290 - (10 + 8))) and ((dumbo3435_52[dumbo3435_8("\136\122\241\252\153\177\122\236", "\237\216\21\130\149")] - dumbo3435_33)[dumbo3435_8("\175\79\88\81\185\221\75\134\75", "\62\226\46\63\63\208\169")] <= (3.5 - 2))) then
-        else
-            dumbo3435_52[dumbo3435_8("\198\63\71\130\18\8", "\62\133\121\53\227\127\109\79")] = CFrame.new(dumbo3435_33);
-            task.wait(442.1 - (416 + 26));
-        end
-        if ((dumbo3435_27[dumbo3435_8("\53\26\51\247\218\171\166", "\194\112\116\82\149\182\206")] == false) and not dumbo3435_35()) then
-            if fireproximityprompt then
-                fireproximityprompt(dumbo3435_25);
-                fireproximityprompt(dumbo3435_23);
+        -- Teleport to waiting spot if not pressing buttons and not at the spot
+        if (not pressingButtons) then
+            if (((973 - (376 + 325)) == (290 - (10 + 8))) and ((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] <= (3.5 - 2))) then
             else
-                task.spawn(function()
+                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
+                task.wait(442.1 - (416 + 26));
+            end
+        end
+
+        if ((dumbo3435_27["Enabled"] == false) and not dumbo3435_35()) then
+            local now = os.clock();
+            if (now - lastButtonPress > 1.0) then
+                lastButtonPress = now;
+                pressingButtons = true;
+                
+                -- Teleport to ID button and press it
+                dumbo3435_52["CFrame"] = dumbo3435_25.Parent.CFrame + Vector3.new(0, 2, 0);
+                task.wait(0.1);
+                if fireproximityprompt then
+                    fireproximityprompt(dumbo3435_25);
+                else
                     dumbo3435_25:InputHoldBegin();
-                    task.wait(dumbo3435_25[dumbo3435_8("\17\167\64\28\228\247\28\56\188\69\23\206", "\110\89\200\44\120\160\130")] + 0.01);
+                    task.wait(dumbo3435_25["HoldDuration"] + 0.01);
                     dumbo3435_25:InputHoldEnd();
-                end);
-                task.spawn(function()
+                end
+                task.wait(0.1);
+                
+                -- Teleport to MD button and press it
+                dumbo3435_52["CFrame"] = dumbo3435_23.Parent.CFrame + Vector3.new(0, 2, 0);
+                task.wait(0.1);
+                if fireproximityprompt then
+                    fireproximityprompt(dumbo3435_23);
+                else
                     dumbo3435_23:InputHoldBegin();
-                    task.wait(dumbo3435_23[dumbo3435_8("\131\204\71\66\103\95\41\76\191\202\68\72", "\45\203\163\43\38\35\42\91")] + (0.01 - 0));
+                    task.wait(dumbo3435_23["HoldDuration"] + 0.01);
                     dumbo3435_23:InputHoldEnd();
-                end);
+                end
+                task.wait(0.1);
+                
+                -- Return to waiting spot
+                dumbo3435_52["CFrame"] = CFrame.new(dumbo3435_33);
+                pressingButtons = false;
             end
         end
     end
