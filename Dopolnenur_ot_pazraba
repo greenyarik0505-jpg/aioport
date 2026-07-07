@@ -270,8 +270,10 @@ local lobbyTextNeedles = {"жд", "игрок", "players", "waiting", "wait", "p
 local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "startcircle", "lobbycircle", "party", "join", "teleport", "pad"}
 local startButtonNeedles = {"созд", "создать", "старт", "начать", "create", "start", "play", "confirm", "ready", "party"}
 local lobbyLoopDelay = 0.15
-local postTeleportStartDelay = 0.60
+local preTeleportDelay = 1.40
+local postTeleportStartDelay = 1.40
 local startClickInterval = 1.0
+local pendingLobbyTeleportSince = 0
 local lastLobbyTeleportTime = 0
 local lastStartClickTime = 0
 
@@ -486,6 +488,8 @@ task.spawn(function()
             local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
             
             if isLobby then
+                local lobbyTeleportPending = false
+
                 -- 1. Automatically teleport player onto the lobby elevator circle (stand directly on surface)
                 local char = LocalPlayer.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -494,18 +498,32 @@ task.spawn(function()
                     if target then
                         local touchCFrame = getLobbyTouchCFrame(target)
                         if touchCFrame and (hrp.Position - touchCFrame.Position).Magnitude > 3.0 then
-                            -- Stand exactly on the pad's top surface + 0.5 Y so Touch reliably registers.
-                            hrp.CFrame = touchCFrame
-                            lastLobbyTeleportTime = os.clock()
-                            task.wait(0.1)
-                            if firetouchinterest and target:IsA("BasePart") then
-                                pcall(function()
-                                    firetouchinterest(hrp, target, 0)
-                                    task.wait(0.05)
-                                    firetouchinterest(hrp, target, 1)
-                                end)
+                            local now = os.clock()
+                            lobbyTeleportPending = true
+                            if pendingLobbyTeleportSince == 0 then
+                                pendingLobbyTeleportSince = now
                             end
+
+                            if (now - pendingLobbyTeleportSince) >= preTeleportDelay then
+                                -- Stand exactly on the pad's top surface + 0.5 Y so Touch reliably registers.
+                                hrp.CFrame = touchCFrame
+                                pendingLobbyTeleportSince = 0
+                                lobbyTeleportPending = false
+                                lastLobbyTeleportTime = os.clock()
+                                task.wait(0.1)
+                                if firetouchinterest and target:IsA("BasePart") then
+                                    pcall(function()
+                                        firetouchinterest(hrp, target, 0)
+                                        task.wait(0.05)
+                                        firetouchinterest(hrp, target, 1)
+                                    end)
+                                end
+                            end
+                        else
+                            pendingLobbyTeleportSince = 0
                         end
+                    else
+                        pendingLobbyTeleportSince = 0
                     end
                 end
                 
@@ -513,7 +531,7 @@ task.spawn(function()
                 local now = os.clock()
                 local canClickAfterTeleport = (now - lastLobbyTeleportTime) >= postTeleportStartDelay
                 local canClickByInterval = (now - lastStartClickTime) >= startClickInterval
-                if canClickAfterTeleport and canClickByInterval then
+                if not lobbyTeleportPending and canClickAfterTeleport and canClickByInterval then
                     local startBtn = findLobbyStartButton()
                     if startBtn then
                         lastStartClickTime = now
