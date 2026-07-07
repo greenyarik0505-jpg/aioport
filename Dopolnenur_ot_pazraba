@@ -86,8 +86,8 @@ end
 -- Main UI Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 210)
-MainFrame.Position = UDim2.new(0.5, -150, 0.35, -105)
+MainFrame.Size = UDim2.new(0, 300, 0, 190)
+MainFrame.Position = UDim2.new(0.5, -150, 0.35, -95)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -137,8 +137,8 @@ Subtitle.Parent = MainFrame
 -- Toggle Button
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0, 36)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0, 68)
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 38)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.46, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75) -- Default Green (Enabled)
 ToggleBtn.Text = "AUTOFARM: ENABLED"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -150,27 +150,11 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleBtn
 
--- FPS Limit Button
-local FpsBtn = Instance.new("TextButton")
-FpsBtn.Name = "FpsBtn"
-FpsBtn.Size = UDim2.new(0.8, 0, 0, 34)
-FpsBtn.Position = UDim2.new(0.1, 0, 0, 112)
-FpsBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55) -- Default Gray (Disabled)
-FpsBtn.Text = "FPS LIMIT: OFF (AUTO)"
-FpsBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-FpsBtn.TextSize = 12
-FpsBtn.Font = Enum.Font.GothamBold
-FpsBtn.Parent = MainFrame
-
-local FpsCorner = Instance.new("UICorner")
-FpsCorner.CornerRadius = UDim.new(0, 8)
-FpsCorner.Parent = FpsBtn
-
 -- Destroy / Unload Button
 local DestroyBtn = Instance.new("TextButton")
 DestroyBtn.Name = "DestroyBtn"
 DestroyBtn.Size = UDim2.new(0.8, 0, 0, 34)
-DestroyBtn.Position = UDim2.new(0.1, 0, 0, 154)
+DestroyBtn.Position = UDim2.new(0.1, 0, 0.72, 0)
 DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40) -- Default Red
 DestroyBtn.Text = "STOP & UNLOAD CHEAT"
 DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -231,7 +215,6 @@ end)
 -- Script state local variables (avoids global race conditions on re-execution)
 local scriptActive = true
 local autofarmEnabled = true
-local fpsLimited = false
 
 -- Connection tracker dictionary (keys: NPC models, values: connections)
 -- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
@@ -256,11 +239,6 @@ local function unloadCheat()
     end
     table.clear(dumbo3435_connections)
     
-    -- Restore original FPS limits if executor supports it
-    if setfpscap then
-        pcall(function() setfpscap(240) end)
-    end
-    
     -- Destroy the ScreenGui completely
     if ScreenGui then
         ScreenGui:Destroy()
@@ -278,29 +256,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(140, 35, 35)
         ToggleBtn.Text = "AUTOFARM: DISABLED"
     end
-end)
-
-local function updateFpsLimit()
-    if fpsLimited then
-        FpsBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75) -- Green (Active)
-        FpsBtn.Text = "FPS LIMIT: ON (15 FPS)"
-        FpsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        if setfpscap then
-            pcall(function() setfpscap(15) end)
-        end
-    else
-        FpsBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55) -- Gray (Inactive)
-        FpsBtn.Text = "FPS LIMIT: OFF (AUTO)"
-        FpsBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        if setfpscap then
-            pcall(function() setfpscap(240) end)
-        end
-    end
-end
-
-FpsBtn.MouseButton1Click:Connect(function()
-    fpsLimited = not fpsLimited
-    updateFpsLimit()
 end)
 
 DestroyBtn.MouseButton1Click:Connect(function()
