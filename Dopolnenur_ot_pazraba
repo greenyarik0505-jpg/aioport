@@ -810,9 +810,9 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                -- Click prompt once every 2 seconds to prevent spam glitches
+                -- Click prompt once every 1.0 second to prevent spam glitches
                 local now = os.clock()
-                if now - lastTriggerTimeID > 2.0 then
+                if now - lastTriggerTimeID > 1.0 then
                     lastTriggerTimeID = now
                     triggerPrompt(dumbo3435_25)
                 end
@@ -840,9 +840,9 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                -- Click prompt once every 2 seconds to prevent spam glitches
+                -- Click prompt once every 1.0 second to prevent spam glitches
                 local now = os.clock()
-                if now - lastTriggerTimeMD > 2.0 then
+                if now - lastTriggerTimeMD > 1.0 then
                     lastTriggerTimeMD = now
                     triggerPrompt(dumbo3435_23)
                 end
