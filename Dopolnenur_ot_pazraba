@@ -269,6 +269,8 @@ end)
 local lobbyTextNeedles = {"жд", "игрок", "players", "waiting", "wait", "player"}
 local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "startcircle", "lobbycircle", "party", "join", "teleport", "pad"}
 local startButtonNeedles = {"созд", "создать", "старт", "начать", "create", "start", "play", "confirm", "ready", "party"}
+local lobbyLoopDelay = 0.15
+local startClickRetryDelay = 0.9
 
 local function stringHasAnyNeedle(value, needles)
     if type(value) ~= "string" then
@@ -468,7 +470,7 @@ end
 
 -- Auto-Lobby creator loop: runs independently in background (respects autofarm toggle state)
 task.spawn(function()
-    while task.wait(0.5) do
+    while task.wait(lobbyLoopDelay) do
         -- Kill this thread immediately if a newer script execution is started
         if not scriptActive or _G.AntigravityExecutionID ~= executionID then 
             break 
@@ -507,7 +509,12 @@ task.spawn(function()
                 local startBtn = findLobbyStartButton()
                 if startBtn then
                     clickGuiButton(startBtn)
-                    task.wait(2.0) -- Wait longer before next check to prevent multi-clicking
+                    task.wait(startClickRetryDelay)
+                    local retryBtn = findLobbyStartButton()
+                    if retryBtn then
+                        clickGuiButton(retryBtn)
+                    end
+                    task.wait(0.15)
                 end
             end
         end
