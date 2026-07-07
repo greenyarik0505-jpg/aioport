@@ -399,17 +399,17 @@ while true do
                         (hasWeapon and (hasWeapon["Value"] == true))) then
                         dumbo3435_45(dumbo3435_58);
                     else
-                        -- Accelerated WalkSpeed connection to prevent game scripts from resetting it to slow speeds
+                        -- Accelerated WalkSpeed set to 24 (instead of 32) to prevent pathfinding overshoot and stuttering at node arrivals
                         if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
                             dumbo3435_58:SetAttribute("SpeedSetupDone", true)
-                            dumbo3435_59.WalkSpeed = 32
+                            dumbo3435_59.WalkSpeed = 24
                             dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                                if dumbo3435_59.WalkSpeed ~= 32 then
-                                    dumbo3435_59.WalkSpeed = 32
+                                if dumbo3435_59.WalkSpeed ~= 24 then
+                                    dumbo3435_59.WalkSpeed = 24
                                 end
                             end)
                         else
-                            dumbo3435_59.WalkSpeed = 32
+                            dumbo3435_59.WalkSpeed = 24
                         end
                     end
                 end
