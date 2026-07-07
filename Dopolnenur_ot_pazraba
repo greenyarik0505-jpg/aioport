@@ -13,12 +13,15 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15)
 
--- Queue execution on teleport to automatically reload script in lobby/round
+-- Queue execution on teleport with Xeno-specific multi-line double bracket string syntax
 local queueTeleport = queue_on_teleport or (syn and syn.queue_on_teleport) or queue_to_teleport
 if queueTeleport then
     pcall(function()
-        queueTeleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/greenyarik0505-jpg/aioport/refs/heads/main/Dopolnenur_ot_pazraba?t=" .. tostring(os.time())))()')
-        print("Secure the Airport: Queued script successfully on teleport!")
+        queueTeleport([[
+            repeat task.wait() until game:IsLoaded()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/greenyarik0505-jpg/aioport/refs/heads/main/Dopolnenur_ot_pazraba?t=" .. tostring(os.time())))()
+        ]])
+        print("Secure the Airport: Queued script successfully via Xeno API!")
     end)
 end
 
