@@ -359,6 +359,39 @@ local function dumbo3435_45(dumbo3435_46)
     end);
 end
 
+-- Strictly check if NPC is a valid living passenger with custom random variables
+local function isValidPassenger(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return false end
+    
+    local properties = npc:FindFirstChild("Properties")
+    local randVars = properties and properties:FindFirstChild("RandomVariables")
+    if not randVars then return false end
+    
+    return true
+end
+
+-- Mathematically check if the passenger is actually waiting in line (on the queue side of the desk)
+local function isPassengerInQueue(npc, buttonPos)
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    
+    local npcPos2D = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
+    local buttonPos2D = Vector3.new(buttonPos.X, 0, buttonPos.Z)
+    
+    -- Must be within 12 studs of the desk button podium
+    local dist = (npcPos2D - buttonPos2D).Magnitude
+    if dist > 12.0 then return false end
+    
+    -- Dot product check: clerk stands towards midpoint (clerkDir)
+    -- Passengers wait on opposite side. Angle must be > 90 deg (Dot product < -0.2)
+    local clerkDir = (Vector3.new(dumbo3435_33.X, 0, dumbo3435_33.Z) - buttonPos2D).Unit
+    local npcDir = (npcPos2D - buttonPos2D).Unit
+    local dot = npcDir:Dot(clerkDir)
+    
+    return dot < -0.2
+end
+
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
@@ -382,34 +415,36 @@ while true do
         for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
             if (not dumbo3435_34[dumbo3435_58]) then
                 local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
-                local dumbo3435_60 = dumbo3435_58:FindFirstChild("Properties");
-                local dumbo3435_61 = dumbo3435_60 and dumbo3435_60:FindFirstChild("RandomVariables");
-                if (dumbo3435_59 and dumbo3435_61) then
-                    local dumbo3435_62 = dumbo3435_61:FindFirstChild("FakePassport");
-                    local dumbo3435_63 = dumbo3435_61:FindFirstChild("ContrabandReal");
-                    
-                    local hasWeapon = dumbo3435_61:FindFirstChild("Weapon") or 
-                                      dumbo3435_61:FindFirstChild("WeaponReal") or 
-                                      dumbo3435_61:FindFirstChild("HasWeapon") or 
-                                      dumbo3435_61:FindFirstChild("WeaponContraband") or
-                                      dumbo3435_61:FindFirstChild("Contraband");
-                    
-                    if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or 
-                        (dumbo3435_63 and (dumbo3435_63["Value"] == true)) or
-                        (hasWeapon and (hasWeapon["Value"] == true))) then
-                        dumbo3435_45(dumbo3435_58);
-                    else
-                        -- Accelerated WalkSpeed set to 24 (instead of 32) to prevent pathfinding overshoot and stuttering at node arrivals
-                        if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
-                            dumbo3435_58:SetAttribute("SpeedSetupDone", true)
-                            dumbo3435_59.WalkSpeed = 24
-                            dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                                if dumbo3435_59.WalkSpeed ~= 24 then
+                if dumbo3435_59 and isValidPassenger(dumbo3435_58) then
+                    -- Accelerated WalkSpeed set to 24 (instead of 32) to prevent pathfinding overshoot and stuttering at node arrivals
+                    if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                        dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                        dumbo3435_59.WalkSpeed = 24
+                        dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                            if dumbo3435_59.WalkSpeed ~= 24 then
                                     dumbo3435_59.WalkSpeed = 24
-                                end
-                            end)
-                        else
-                            dumbo3435_59.WalkSpeed = 24
+                            end
+                        end)
+                    else
+                        dumbo3435_59.WalkSpeed = 24
+                    end
+                elseif dumbo3435_59 then
+                    -- If they have properties that mark them as criminals, freeze them
+                    local properties = dumbo3435_58:FindFirstChild("Properties")
+                    local randVars = properties and properties:FindFirstChild("RandomVariables")
+                    if randVars then
+                        local dumbo3435_62 = randVars:FindFirstChild("FakePassport");
+                        local dumbo3435_63 = randVars:FindFirstChild("ContrabandReal");
+                        local hasWeapon = randVars:FindFirstChild("Weapon") or 
+                                          randVars:FindFirstChild("WeaponReal") or 
+                                          randVars:FindFirstChild("HasWeapon") or 
+                                          randVars:FindFirstChild("WeaponContraband") or
+                                          randVars:FindFirstChild("Contraband");
+                        
+                        if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or 
+                            (dumbo3435_63 and (dumbo3435_63["Value"] == true)) or
+                            (hasWeapon and (hasWeapon["Value"] == true))) then
+                            dumbo3435_45(dumbo3435_58);
                         end
                     end
                 end
@@ -551,12 +586,8 @@ while true do
                 local idPos = dumbo3435_25.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        local hrp = npc:FindFirstChild("HumanoidRootPart")
-                        if hrp then
-                            local dist = (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(idPos.X, 0, idPos.Z)).Magnitude
-                            if dist <= 12.0 then
-                                idQueue = idQueue + 1
-                            end
+                        if isValidPassenger(npc) and isPassengerInQueue(npc, idPos) then
+                            idQueue = idQueue + 1
                         end
                     end
                 end
@@ -566,12 +597,8 @@ while true do
                 local mdPos = dumbo3435_23.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        local hrp = npc:FindFirstChild("HumanoidRootPart")
-                        if hrp then
-                            local dist = (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(mdPos.X, 0, mdPos.Z)).Magnitude
-                            if dist <= 12.0 then
-                                mdQueue = mdQueue + 1
-                            end
+                        if isValidPassenger(npc) and isPassengerInQueue(npc, mdPos) then
+                            mdQueue = mdQueue + 1
                         end
                     end
                 end
