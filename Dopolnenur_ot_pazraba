@@ -244,10 +244,41 @@ FloatBtn.MouseButton1Click:Connect(function()
     FloatBtn.Visible = false
 end)
 
--- Script state local variables - restore from _G to persist state across teleports
+-- Settings file helpers (writefile/readfile survive teleports, _G does not)
+local SETTINGS_FILE = "AG_settings.txt"
+
+local function saveSettings()
+    pcall(function()
+        if writefile then
+            local autofarmVal = autofarmEnabled and "1" or "0"
+            local godModeVal  = godModeEnabled  and "1" or "0"
+            writefile(SETTINGS_FILE, autofarmVal .. "," .. godModeVal)
+        end
+    end)
+end
+
+local function loadSettings()
+    local ok, result = pcall(function()
+        if readfile and isfile and isfile(SETTINGS_FILE) then
+            local data = readfile(SETTINGS_FILE)
+            local parts = data:split(",")
+            if parts[1] ~= nil then
+                autofarmEnabled = (parts[1] == "1")
+            end
+            if parts[2] ~= nil then
+                godModeEnabled = (parts[2] == "1")
+            end
+        end
+    end)
+end
+
+-- Script state local variables
 local scriptActive = true
-local autofarmEnabled = (_G.AG_autofarmEnabled ~= nil) and _G.AG_autofarmEnabled or true
-local godModeEnabled  = (_G.AG_godModeEnabled  ~= nil) and _G.AG_godModeEnabled  or false
+local autofarmEnabled = true   -- default
+local godModeEnabled  = false  -- default
+
+-- Load saved settings from file (survives teleports!)
+loadSettings()
 
 -- Connection tracker dictionary (keys: NPC models, values: connections)
 -- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
@@ -298,7 +329,7 @@ end
 
 ToggleBtn.MouseButton1Click:Connect(function()
     autofarmEnabled = not autofarmEnabled
-    _G.AG_autofarmEnabled = autofarmEnabled  -- save state
+    saveSettings()  -- save to file
     if autofarmEnabled then
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
         ToggleBtn.Text = "AUTOFARM: ENABLED"
@@ -310,7 +341,7 @@ end)
 
 GodModeBtn.MouseButton1Click:Connect(function()
     godModeEnabled = not godModeEnabled
-    _G.AG_godModeEnabled = godModeEnabled  -- save state
+    saveSettings()  -- save to file
     if godModeEnabled then
         GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
         GodModeBtn.Text = "GOD MODE: ON"
@@ -323,6 +354,7 @@ end)
 DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
 end)
+
 
 -- God Mode loop: keeps player health at max every 0.1s when enabled
 task.spawn(function()
