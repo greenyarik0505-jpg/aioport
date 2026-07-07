@@ -414,12 +414,33 @@ local function hasActiveRoundReturnButton()
     for _, desc in ipairs(PlayerGui:GetDescendants()) do
         if (desc:IsA("TextButton") or desc:IsA("TextLabel")) and isGuiObjectVisible(desc) then
             local text = getGuiText(desc)
-            if stringHasAnyNeedle(text, {"вернуться в лобби", "back to lobby", "return to lobby"}) then
+            if stringHasAnyNeedle(text, {"вернуться в лобби", "back to lobby", "return to lobby", "вернуться", "return"}) then
                 return true
             end
         end
     end
     return false
+end
+
+-- Helper: Find the "ВЕРНУТЬСЯ В ЛОББИ" / "Return to Lobby" button (same logic as findLobbyStartButton)
+local function findReturnToLobbyButton()
+    local returnNeedles = {"вернуться в лобби", "back to lobby", "return to lobby", "вернуться"}
+    for _, desc in ipairs(PlayerGui:GetDescendants()) do
+        if (desc:IsA("TextButton") or desc:IsA("ImageButton")) and isGuiObjectVisible(desc) and desc.AbsoluteSize.X > 0 and desc.AbsoluteSize.Y > 0 then
+            if stringHasAnyNeedle(getGuiText(desc), returnNeedles) then
+                return desc
+            end
+        elseif (desc:IsA("TextLabel") or desc:IsA("TextButton")) and isGuiObjectVisible(desc) and stringHasAnyNeedle(getGuiText(desc), returnNeedles) then
+            local parent = desc.Parent
+            while parent and parent ~= PlayerGui do
+                if (parent:IsA("TextButton") or parent:IsA("ImageButton")) and isGuiObjectVisible(parent) then
+                    return parent
+                end
+                parent = parent.Parent
+            end
+        end
+    end
+    return nil
 end
 
 -- Helper: Find the CREATE/START lobby button in PlayerGui.
@@ -505,21 +526,30 @@ task.spawn(function()
         
         -- Respect Autofarm Enabled toggle status
         if autofarmEnabled and not GuiService.MenuIsOpen then
-            -- Click the CREATE/START button whenever it is visibly present. This stays separate
-            -- from teleport checks so a lobby GUI cannot be blocked by map/round detection.
             local now = os.clock()
-            local startBtn = findLobbyStartButton()
-            if startBtn and (now - lastStartClickTime) >= startClickInterval then
+
+            -- Priority 1: Auto-click "ВЕРНУТЬСЯ В ЛОББИ" if it's on screen (end of round)
+            local returnBtn = findReturnToLobbyButton()
+            if returnBtn and (now - lastStartClickTime) >= startClickInterval then
                 lastStartClickTime = now
-                clickGuiButton(startBtn)
+                clickGuiButton(returnBtn)
             end
 
-            -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
+            -- Priority 2: Click the CREATE/START lobby button when visible
+            if not returnBtn then
+                local startBtn = findLobbyStartButton()
+                if startBtn and (now - lastStartClickTime) >= startClickInterval then
+                    lastStartClickTime = now
+                    clickGuiButton(startBtn)
+                end
+            end
+
+            -- Priority 3: Teleport to elevator in lobby if no round buttons visible
             local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
-            local isLobby = (not hasActiveRoundReturnButton()) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
-            
+            local isLobby = (not returnBtn) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
+
             if isLobby then
-                -- 1. Automatically teleport player onto the lobby elevator circle (stand directly on surface)
+                -- Automatically teleport player onto the lobby elevator circle
                 local char = LocalPlayer.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -539,8 +569,6 @@ task.spawn(function()
                         end
                     end
                 end
-                
-                -- 2. Button click is handled above once per second when the CREATE/START GUI is visible.
             end
         end
     end
