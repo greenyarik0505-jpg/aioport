@@ -542,52 +542,44 @@ while true do
                             -- Criminal: Freeze them
                             dumbo3435_45(dumbo3435_58)
                         else
-                            -- Innocent: check if they are near the desk counter
-                            if isNPCNearDesk(dumbo3435_58) then
-                                -- Near desk counter -> release walkspeed lock so they can stop naturally!
-                                if dumbo3435_connections[dumbo3435_58] then
-                                    pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
-                                    dumbo3435_connections[dumbo3435_58] = nil
-                                end
-                            else
-                                -- Far from desk -> speed them up in the queue
-                                if not dumbo3435_58:GetAttribute("SpeedSetupDone") or not dumbo3435_connections[dumbo3435_58] then
-                                    dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                            -- Innocent Passenger speed control based on MoveDirection
+                            if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                                dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                                
+                                -- Initial speed setup
+                                if dumbo3435_59.MoveDirection.Magnitude > 0 then
                                     dumbo3435_59.WalkSpeed = 24
-                                    
-                                    if dumbo3435_connections[dumbo3435_58] then
-                                        pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
-                                    end
-                                    
-                                    local conn
-                                    conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                                        -- Only override if we are still far from the desk
-                                        if not isNPCNearDesk(dumbo3435_58) then
-                                            if dumbo3435_59.WalkSpeed ~= 24 then
-                                                dumbo3435_59.WalkSpeed = 24
-                                            end
-                                        else
-                                            -- Release lock if they arrived at desk
-                                            if conn then
-                                                pcall(function() conn:Disconnect() end)
-                                                if dumbo3435_connections[dumbo3435_58] == conn then
-                                                    dumbo3435_connections[dumbo3435_58] = nil
-                                                end
-                                            end
-                                        end
-                                    end)
-                                    dumbo3435_connections[dumbo3435_58] = conn
-                                    
-                                    dumbo3435_58.AncestryChanged:Connect(function(_, parent)
-                                        if not parent then
-                                            if dumbo3435_connections[dumbo3435_58] == conn then
-                                                pcall(function() conn:Disconnect() end)
-                                                dumbo3435_connections[dumbo3435_58] = nil
-                                            end
-                                        end
-                                    end)
                                 else
+                                    dumbo3435_59.WalkSpeed = 12
+                                end
+                                
+                                -- Listen to MoveDirection changes to dynamically adjust WalkSpeed
+                                -- If MoveDirection is > 0 (walking), speed them up.
+                                -- If MoveDirection is 0 (standing in line/desk), release to default so they stand still!
+                                local conn
+                                conn = dumbo3435_59:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+                                    if dumbo3435_59.MoveDirection.Magnitude > 0 then
+                                        dumbo3435_59.WalkSpeed = 24
+                                    else
+                                        dumbo3435_59.WalkSpeed = 12
+                                    end
+                                end)
+                                dumbo3435_connections[dumbo3435_58] = conn
+                                
+                                dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                                    if not parent then
+                                        if dumbo3435_connections[dumbo3435_58] == conn then
+                                            pcall(function() conn:Disconnect() end)
+                                            dumbo3435_connections[dumbo3435_58] = nil
+                                        end
+                                    end
+                                end)
+                            else
+                                -- Fallback updates for already setup characters
+                                if dumbo3435_59.MoveDirection.Magnitude > 0 then
                                     dumbo3435_59.WalkSpeed = 24
+                                else
+                                    dumbo3435_59.WalkSpeed = 12
                                 end
                             end
                         end
