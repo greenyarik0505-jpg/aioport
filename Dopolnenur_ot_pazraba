@@ -38,11 +38,16 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AntigravityHub"
 ScreenGui.ResetOnSpawn = false
--- Set a standard display order so the Roblox Escape menu can render on top and function properly!
-ScreenGui.DisplayOrder = 10 
+-- Set max possible display order so it stays visible and interactive on top of the Roblox Escape menu!
+ScreenGui.DisplayOrder = 2147483647 
 
--- Put in PlayerGui directly to prevent conflicts with CoreGui (which closes the Escape menu!)
-ScreenGui.Parent = PlayerGui
+-- Put in CoreGui to persist across deaths and remain interactive on top of the Escape menu, fallback to PlayerGui
+local success, err = pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not success then
+    ScreenGui.Parent = PlayerGui
+end
 
 
 -- Simple custom dragging logic compatible with touch (mobile) and mouse (PC)
