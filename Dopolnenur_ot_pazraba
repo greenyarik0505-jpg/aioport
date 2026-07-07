@@ -269,7 +269,7 @@ local dumbo3435_33 = cframeCenter.Position;
 local dumbo3435_34 = {};
 
 local pressingButtons = false;
-local currentPodium = "ID"; -- Alternates between "ID" and "MD"
+local currentPodium = "ID"; -- Alternates between "ID" and "MD" when both have passengers
 local stateStartTime = os.clock();
 
 local function dumbo3435_35()
@@ -543,25 +543,78 @@ while true do
         
         -- Automatically fire button prompts if we are not computer-broken and there is no fire
         if (not compBroken and not hasFire) then
-            local now = os.clock()
-            -- Alternates active desk every 2.5 seconds (optimized for fast service and standing still)
-            if (now - stateStartTime > 2.5) then
-                stateStartTime = now
-                if currentPodium == "ID" then
-                    currentPodium = "MD"
-                else
-                    currentPodium = "ID"
+            -- Count passengers at each desk queue in a 12-stud horizontal radius
+            local idQueue = 0
+            local mdQueue = 0
+            
+            if dumbo3435_25 and dumbo3435_25.Parent then
+                local idPos = dumbo3435_25.Parent.Position
+                if dumbo3435_15 then
+                    for _, npc in ipairs(dumbo3435_15:GetChildren()) do
+                        local hrp = npc:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local dist = (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(idPos.X, 0, idPos.Z)).Magnitude
+                            if dist <= 12.0 then
+                                idQueue = idQueue + 1
+                            end
+                        end
+                    end
                 end
             end
             
-            pressingButtons = true -- Disable midpoint teleportation
+            if dumbo3435_23 and dumbo3435_23.Parent then
+                local mdPos = dumbo3435_23.Parent.Position
+                if dumbo3435_15 then
+                    for _, npc in ipairs(dumbo3435_15:GetChildren()) do
+                        local hrp = npc:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local dist = (Vector3.new(hrp.Position.X, 0, hrp.Position.Z) - Vector3.new(mdPos.X, 0, mdPos.Z)).Magnitude
+                            if dist <= 12.0 then
+                                mdQueue = mdQueue + 1
+                            end
+                        end
+                    end
+                end
+            end
             
-            if currentPodium == "ID" and dumbo3435_25 then
+            -- Decide where to stand based on passenger presence (Conditional Teleportation)
+            local targetPodium = nil
+            
+            if idQueue == 0 and mdQueue == 0 then
+                -- No passengers anywhere -> stay in the center
+                targetPodium = "Center"
+            elseif idQueue > 0 and mdQueue == 0 then
+                -- Passengers only at ID -> stand at ID
+                targetPodium = "ID"
+            elseif mdQueue > 0 and idQueue == 0 then
+                -- Passengers only at MD -> stand at MD
+                targetPodium = "MD"
+            else
+                -- Passengers at both -> alternate every 2.5 seconds to service both queues
+                local now = os.clock()
+                if (now - stateStartTime > 2.5) then
+                    stateStartTime = now
+                    if currentPodium == "ID" then
+                        currentPodium = "MD"
+                    else
+                        currentPodium = "ID"
+                    end
+                end
+                targetPodium = currentPodium
+            end
+            
+            if targetPodium == "Center" then
+                pressingButtons = false
+                -- Teleport back to center when no passengers are waiting
+                if (((dumbo3435_52["Position"] - dumbo3435_33)["Magnitude"] > 4.0)) then
+                    dumbo3435_52["CFrame"] = cframeCenter
+                    task.wait(0.1)
+                end
+            elseif targetPodium == "ID" and dumbo3435_25 then
+                pressingButtons = true
                 local targetCFrame = cframeID
-                -- Horizontal distance check with 2.0 threshold since coordinates are exact and safe from collisions
                 local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
                 if horizontalDist >= 2.0 then
-                    -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         dumbo3435_52.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -572,7 +625,7 @@ while true do
                     task.wait(0.1)
                 end
                 
-                -- Orient camera to look down the ID passenger queue (CCTV view) to see wait states
+                -- CCTV camera looking down the ID queue to see wait states
                 pcall(function()
                     local buttonPos = dumbo3435_25.Parent.Position
                     local lookDir = (buttonPos - targetCFrame.Position).Unit
@@ -581,14 +634,12 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_25)
-            elseif currentPodium == "MD" and dumbo3435_23 then
+            elseif targetPodium == "MD" and dumbo3435_23 then
+                pressingButtons = true
                 local targetCFrame = cframeMD
-                -- Horizontal distance check with 2.0 threshold since coordinates are exact and safe from collisions
                 local horizontalDist = (Vector3.new(dumbo3435_52.Position.X, 0, dumbo3435_52.Position.Z) - Vector3.new(targetCFrame.Position.X, 0, targetCFrame.Position.Z)).Magnitude
                 if horizontalDist >= 2.0 then
-                    -- Reset physical velocity to ensure teleport is 100% successful on the first try
                     pcall(function()
                         dumbo3435_52.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         dumbo3435_52.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -599,7 +650,7 @@ while true do
                     task.wait(0.1)
                 end
                 
-                -- Orient camera to look down the MD passenger queue (CCTV view) to see wait states
+                -- CCTV camera looking down the MD queue to see wait states
                 pcall(function()
                     local buttonPos = dumbo3435_23.Parent.Position
                     local lookDir = (buttonPos - targetCFrame.Position).Unit
@@ -608,7 +659,6 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_23)
             end
         else
