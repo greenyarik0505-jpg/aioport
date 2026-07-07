@@ -34,6 +34,10 @@ end
 if PlayerGui:FindFirstChild("AntigravityHub") then
     PlayerGui["AntigravityHub"]:Destroy()
 end
+if gethui and gethui():FindFirstChild("AntigravityHub") then
+    gethui()["AntigravityHub"]:Destroy()
+end
+
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AntigravityHub"
@@ -41,13 +45,18 @@ ScreenGui.ResetOnSpawn = false
 -- Set max possible display order so it stays visible and interactive on top of the Roblox Escape menu!
 ScreenGui.DisplayOrder = 2147483647 
 
--- Put in CoreGui to persist across deaths and remain interactive on top of the Escape menu, fallback to PlayerGui
+-- Put in gethui() (clean executor UI namespace) if supported, fallback to CoreGui, then PlayerGui
 local success, err = pcall(function()
-    ScreenGui.Parent = CoreGui
+    if gethui then
+        ScreenGui.Parent = gethui()
+    else
+        ScreenGui.Parent = CoreGui
+    end
 end)
 if not success then
     ScreenGui.Parent = PlayerGui
 end
+
 
 
 -- Simple custom dragging logic compatible with touch (mobile) and mouse (PC)
@@ -218,20 +227,6 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = true
     FloatBtn.Visible = false
 end)
-
--- Toggle visibility using keyboard hotkeys (Insert, RightControl, F8)
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and (input.KeyCode == Enum.KeyCode.Insert or input.KeyCode == Enum.KeyCode.RightControl or input.KeyCode == Enum.KeyCode.F8) then
-        if MainFrame.Visible then
-            MainFrame.Visible = false
-            FloatBtn.Visible = true
-        else
-            MainFrame.Visible = true
-            FloatBtn.Visible = false
-        end
-    end
-end)
-
 
 -- Script state local variables (avoids global race conditions on re-execution)
 local scriptActive = true
