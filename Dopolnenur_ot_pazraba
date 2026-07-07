@@ -2,7 +2,7 @@
 -- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
-print("Secure the Airport: Initializing UI Menu with Unload feature...")
+print("Secure the Airport: Initializing UI Menu...")
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -71,7 +71,7 @@ local function makeDraggable(frame, parentFrame)
     end)
 end
 
--- Main UI Frame (extended size to fit Destroy button)
+-- Main UI Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 300, 0, 190)
@@ -200,33 +200,32 @@ FloatBtn.MouseButton1Click:Connect(function()
     FloatBtn.Visible = false
 end)
 
--- Connection tracker
+-- Script state local variables (avoids global race conditions on re-execution)
+local scriptActive = true
+local autofarmEnabled = true
+
+-- Connection tracker dictionary (keys: NPC models, values: connections)
+-- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
 local dumbo3435_connections = {}
 
 local function unloadCheat()
-    _G.CheatDestroyed = true
-    _G.AutofarmEnabled = false
+    scriptActive = false
+    autofarmEnabled = false
     
     -- Disconnect all active property change connections
-    for _, conn in ipairs(dumbo3435_connections) do
+    for npc, conn in pairs(dumbo3435_connections) do
         if conn then
             pcall(function() conn:Disconnect() end)
         end
-    end
-    table.clear(dumbo3435_connections)
-    
-    -- Restore original walkspeeds to all innocents currently in the workspace
-    local storage = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Storage")
-    local normalStorage = storage and storage:FindFirstChild("NormalStorage")
-    local npcWorkspace = normalStorage and normalStorage:FindFirstChild("NPCWorkspace")
-    if npcWorkspace then
-        for _, npc in ipairs(npcWorkspace:GetChildren()) do
+        -- Restore original walkspeeds to all active NPCs
+        if npc and npc.Parent then
             local hum = npc:FindFirstChildOfClass("Humanoid")
             if hum then
-                pcall(function() hum.WalkSpeed = 12 end) -- default speed
+                pcall(function() hum.WalkSpeed = 12 end)
             end
         end
     end
+    table.clear(dumbo3435_connections)
     
     -- Destroy the ScreenGui completely
     if ScreenGui then
@@ -236,13 +235,9 @@ local function unloadCheat()
     print("Secure the Airport: Cheat fully stopped and unloaded!")
 end
 
--- Autofarm Toggle state variables
-_G.AutofarmEnabled = true
-_G.CheatDestroyed = false
-
 ToggleBtn.MouseButton1Click:Connect(function()
-    _G.AutofarmEnabled = not _G.AutofarmEnabled
-    if _G.AutofarmEnabled then
+    autofarmEnabled = not autofarmEnabled
+    if autofarmEnabled then
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
         ToggleBtn.Text = "AUTOFARM: ENABLED"
     else
@@ -398,12 +393,23 @@ local function dumbo3435_45(dumbo3435_46)
         -- Maintain freeze on WalkSpeed change
         if not dumbo3435_46:GetAttribute("FreezeSetupDone") then
             dumbo3435_46:SetAttribute("FreezeSetupDone", true)
-            local conn = dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            local conn
+            conn = dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
                 if dumbo3435_48.WalkSpeed ~= 0 then
                     dumbo3435_48.WalkSpeed = 0
                 end
             end)
-            table.insert(dumbo3435_connections, conn)
+            dumbo3435_connections[dumbo3435_46] = conn
+            
+            -- Connection cleanup on NPC removal (prevents memory leak)
+            dumbo3435_46.AncestryChanged:Connect(function(_, parent)
+                if not parent then
+                    if dumbo3435_connections[dumbo3435_46] then
+                        pcall(function() dumbo3435_connections[dumbo3435_46]:Disconnect() end)
+                        dumbo3435_connections[dumbo3435_46] = nil
+                    end
+                end
+            end)
         end
     end
     task.spawn(function()
@@ -453,8 +459,8 @@ end
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
-    -- If the destroy button was clicked, stop script execution immediately
-    if _G.CheatDestroyed then
+    -- If script active local variable is set to false, end loop immediately (safe from race conditions)
+    if not scriptActive then
         break
     end
 
@@ -483,12 +489,23 @@ while true do
                     if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
                         dumbo3435_58:SetAttribute("SpeedSetupDone", true)
                         dumbo3435_59.WalkSpeed = 24
-                        local conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                        local conn
+                        conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
                             if dumbo3435_59.WalkSpeed ~= 24 then
                                 dumbo3435_59.WalkSpeed = 24
                             end
                         end)
-                        table.insert(dumbo3435_connections, conn)
+                        dumbo3435_connections[dumbo3435_58] = conn
+                        
+                        -- Connection cleanup on NPC removal (prevents memory leak)
+                        dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                            if not parent then
+                                if dumbo3435_connections[dumbo3435_58] then
+                                    pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
+                                    dumbo3435_connections[dumbo3435_58] = nil
+                                end
+                            end
+                        end)
                     else
                         dumbo3435_59.WalkSpeed = 24
                     end
@@ -517,7 +534,7 @@ while true do
     end
 
     -- If Autofarm is disabled via GUI button, pause player movement and wait
-    if not _G.AutofarmEnabled then
+    if not autofarmEnabled then
         pressingButtons = false
         task.wait(0.2)
         continue
