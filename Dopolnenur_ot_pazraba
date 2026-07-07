@@ -290,7 +290,7 @@ else
 end
 if godModeEnabled then
     GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
-    GodModeBtn.Text = "GOD MODE: ON \u2665"
+    GodModeBtn.Text = "GOD MODE: ON"
 else
     GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
     GodModeBtn.Text = "GOD MODE: OFF"
@@ -313,7 +313,7 @@ GodModeBtn.MouseButton1Click:Connect(function()
     _G.AG_godModeEnabled = godModeEnabled  -- save state
     if godModeEnabled then
         GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
-        GodModeBtn.Text = "GOD MODE: ON \u2665"
+        GodModeBtn.Text = "GOD MODE: ON"
     else
         GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
         GodModeBtn.Text = "GOD MODE: OFF"
