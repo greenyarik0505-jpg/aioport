@@ -2,7 +2,7 @@
 -- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
-print("Secure the Airport: Initializing UI Menu...")
+print("Secure the Airport: Initializing UI Menu with Top-level Display Order...")
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -20,6 +20,8 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AntigravityHub"
 ScreenGui.ResetOnSpawn = false
+-- Set max possible display order so it stays visible and interactive on top of the Roblox Escape menu!
+ScreenGui.DisplayOrder = 2147483647 
 
 -- Put in CoreGui to persist across deaths/resets, fallback to PlayerGui
 local success, err = pcall(function()
@@ -346,17 +348,6 @@ local function dumbo3435_45(dumbo3435_46)
         end
         dumbo3435_34[dumbo3435_46] = nil;
     end);
-end
-
--- Helper function to calculate a natural stand position in front of the counter desk (clerk-side)
-local function getCounterStandCFrame(buttonPrompt)
-    if not buttonPrompt or not buttonPrompt.Parent then return CFrame.new(dumbo3435_33) end
-    local buttonPos = buttonPrompt.Parent.Position
-    -- Calculate 2D direction on the XZ plane to prevent Y component scaling bugs
-    local dir = (Vector3.new(dumbo3435_33.X, 0, dumbo3435_33.Z) - Vector3.new(buttonPos.X, 0, buttonPos.Z)).Unit
-    -- Stand 4.5 studs away from the button to completely avoid clipping/colliding with the desk models
-    local targetPos = buttonPos + dir * 4.5
-    return CFrame.new(Vector3.new(targetPos.X, 3.44, targetPos.Z))
 end
 
 print("Secure the Airport: Variables initialized! Starting main loop...");
