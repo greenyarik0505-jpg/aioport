@@ -500,34 +500,54 @@ while true do
             if (not dumbo3435_34[dumbo3435_58]) then
                 local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
                 if dumbo3435_59 then
-                    if isNPCNormalPassenger(dumbo3435_58) then
-                        -- Innocent Passenger: Accelerated WalkSpeed set to 24 (instead of 32) for smooth stops
-                        if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
-                            dumbo3435_58:SetAttribute("SpeedSetupDone", true)
-                            dumbo3435_59.WalkSpeed = 24
-                            local conn
-                            conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                                if dumbo3435_59.WalkSpeed ~= 24 then
-                                    dumbo3435_59.WalkSpeed = 24
-                                end
-                            end)
-                            dumbo3435_connections[dumbo3435_58] = conn
-                            
-                            -- Connection cleanup on NPC removal (prevents memory leak)
-                            dumbo3435_58.AncestryChanged:Connect(function(_, parent)
-                                if not parent then
-                                    if dumbo3435_connections[dumbo3435_58] then
-                                        pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
-                                        dumbo3435_connections[dumbo3435_58] = nil
-                                    end
-                                end
-                            end)
+                    local properties = dumbo3435_58:FindFirstChild("Properties")
+                    local randVars = properties and properties:FindFirstChild("RandomVariables")
+                    
+                    if randVars then
+                        -- passenger properties loaded, check criminal state
+                        local fakePassport = randVars:FindFirstChild("FakePassport")
+                        local contrabandReal = randVars:FindFirstChild("ContrabandReal")
+                        local hasWeapon = randVars:FindFirstChild("Weapon") or 
+                                          randVars:FindFirstChild("WeaponReal") or 
+                                          randVars:FindFirstChild("HasWeapon") or 
+                                          randVars:FindFirstChild("WeaponContraband") or
+                                          randVars:FindFirstChild("Contraband")
+                                          
+                        local isCriminal = (fakePassport and fakePassport.Value == true) or
+                                           (contrabandReal and contrabandReal.Value == true) or
+                                           (hasWeapon and hasWeapon.Value == true)
+                                           
+                        if isCriminal then
+                            -- Criminal: Freeze them
+                            dumbo3435_45(dumbo3435_58)
                         else
-                            dumbo3435_59.WalkSpeed = 24
+                            -- Innocent Passenger: Accelerated WalkSpeed set to 24
+                            if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                                dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                                dumbo3435_59.WalkSpeed = 24
+                                local conn
+                                conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                                    if dumbo3435_59.WalkSpeed ~= 24 then
+                                        dumbo3435_59.WalkSpeed = 24
+                                    end
+                                end)
+                                dumbo3435_connections[dumbo3435_58] = conn
+                                
+                                -- Connection cleanup on NPC removal (prevents memory leak)
+                                dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                                    if not parent then
+                                        if dumbo3435_connections[dumbo3435_58] then
+                                            pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
+                                            dumbo3435_connections[dumbo3435_58] = nil
+                                        end
+                                    end
+                                end)
+                            else
+                                dumbo3435_59.WalkSpeed = 24
+                            end
                         end
                     else
-                        -- Criminal or Hostile: Freeze them instantly so they cannot slide or bug out when arrested
-                        dumbo3435_45(dumbo3435_58);
+                        -- Properties not loaded yet (or static staff NPC) -> wait and do not freeze
                     end
                 end
             end
@@ -573,8 +593,14 @@ while true do
                 local dumbo3435_70 = dumbo3435_69:FindFirstChild("InteractPart");
                 local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild("ProximityPrompt");
                 if (dumbo3435_71 and dumbo3435_71["Enabled"]) then
-                    dumbo3435_52["CFrame"] = dumbo3435_69:GetPivot() + Vector3.new(0, 2, 0);
+                    local standPos = dumbo3435_69:GetPivot().Position
+                    local playerPos = standPos + Vector3.new(0, 2, 4) -- Stand 4 studs back
+                    
+                    -- Orient player and camera to look directly at the fire extinguisher box
+                    dumbo3435_52["CFrame"] = CFrame.lookAt(playerPos, standPos)
+                    dumbo3435_19["CFrame"] = CFrame.lookAt(playerPos + Vector3.new(0, 2, 2), standPos)
                     task.wait(0.4);
+                    
                     local dumbo3435_72 = 0;
                     while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"))) and (dumbo3435_72 < 15) do
                         triggerPrompt(dumbo3435_71);
