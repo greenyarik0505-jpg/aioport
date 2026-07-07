@@ -103,7 +103,7 @@ end
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 300, 0, 240)
-MainFrame.Position = UDim2.new(0.5, -150, 0.35, -95)
+MainFrame.Position = UDim2.new(1, -320, 0, 20) -- Top-right corner, 20px from edge
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -202,7 +202,7 @@ DestroyCorner.Parent = DestroyBtn
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Name = "FloatBtn"
 FloatBtn.Size = UDim2.new(0, 45, 0, 45)
-FloatBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
+FloatBtn.Position = UDim2.new(1, -60, 0, 20) -- Top-right corner when minimized
 FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 FloatBtn.Text = "AG"
 FloatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
