@@ -338,15 +338,14 @@ local function findLobbyCircle()
     return nil
 end
 
--- Helper: Check if a GuiObject is fully visible on the screen
+-- Helper: Check if a GuiObject is fully visible on the screen (recursively checks ALL ancestors up to PlayerGui)
 local function isGuiObjectVisible(gui)
-    if not gui.Visible then return false end
-    local parent = gui.Parent
-    while parent and parent:IsA("GuiObject") do
-        if not parent.Visible then
+    local current = gui
+    while current and current ~= PlayerGui do
+        if current:IsA("GuiObject") and not current.Visible then
             return false
         end
-        parent = parent.Parent
+        current = current.Parent
     end
     local screenGui = gui:FindFirstAncestorOfClass("ScreenGui")
     if screenGui and not screenGui.Enabled then
@@ -403,11 +402,26 @@ local function findLobbyStartButton()
     return nil
 end
 
--- Click GUI Button simulating native events
+-- Click GUI Button simulating native events using Roblox VirtualInputManager & signals
 local function clickGuiButton(btn)
     if not btn then return end
     
-    -- Method 1: firesignal (standard exploit api)
+    print("Secure the Airport: Auto-clicking button: " .. btn:GetFullName())
+
+    -- Method 1: VirtualInputManager (Native physical mouse click simulation - 100% reliable)
+    pcall(function()
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        local pos = btn.AbsolutePosition
+        local size = btn.AbsoluteSize
+        local clickX = pos.X + size.X / 2
+        local clickY = pos.Y + size.Y / 2
+        
+        VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+        task.wait(0.05)
+        VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+    end)
+    
+    -- Method 2: firesignal (standard exploit api)
     if firesignal then
         pcall(function() firesignal(btn.MouseButton1Click) end)
         pcall(function() firesignal(btn.Activated) end)
@@ -415,7 +429,7 @@ local function clickGuiButton(btn)
         pcall(function() firesignal(btn.MouseButton1Up) end)
     end
     
-    -- Method 2: getconnections (alternative exploit api)
+    -- Method 3: getconnections (alternative exploit api)
     if getconnections then
         local events = {"MouseButton1Click", "Activated", "MouseButton1Down", "MouseButton1Up"}
         for _, eventName in ipairs(events) do
@@ -461,7 +475,7 @@ task.spawn(function()
                 local startBtn = findLobbyStartButton()
                 if startBtn then
                     clickGuiButton(startBtn)
-                    task.wait(1.0)
+                    task.wait(2.0) -- Wait longer before next check to prevent multi-clicking
                 end
             end
         end
