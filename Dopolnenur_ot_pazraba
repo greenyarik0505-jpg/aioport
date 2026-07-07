@@ -219,6 +219,20 @@ FloatBtn.MouseButton1Click:Connect(function()
     FloatBtn.Visible = false
 end)
 
+-- Toggle visibility using keyboard hotkeys (Insert, RightControl, F8)
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and (input.KeyCode == Enum.KeyCode.Insert or input.KeyCode == Enum.KeyCode.RightControl or input.KeyCode == Enum.KeyCode.F8) then
+        if MainFrame.Visible then
+            MainFrame.Visible = false
+            FloatBtn.Visible = true
+        else
+            MainFrame.Visible = true
+            FloatBtn.Visible = false
+        end
+    end
+end)
+
+
 -- Script state local variables (avoids global race conditions on re-execution)
 local scriptActive = true
 local autofarmEnabled = true
