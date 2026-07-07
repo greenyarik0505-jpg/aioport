@@ -661,6 +661,60 @@ local function triggerPrompt(prompt)
     end
 end
 
+local function safeSetRootCFrame(root, cf)
+    if not root or not cf then
+        return
+    end
+
+    pcall(function()
+        root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+    root.CFrame = cf
+end
+
+local function isSafeMapPosition(pos)
+    if not pos then
+        return false
+    end
+    if pos.Y < -10 or pos.Y > 80 then
+        return false
+    end
+    if (Vector3.new(pos.X, 0, pos.Z) - Vector3.new(dumbo3435_33.X, 0, dumbo3435_33.Z)).Magnitude > 180 then
+        return false
+    end
+    return true
+end
+
+local function getFireExtinguisherStandCFrame(point)
+    if not point then
+        return nil
+    end
+
+    local interactPart = point:FindFirstChild("InteractPart", true)
+    if not interactPart or not interactPart:IsA("BasePart") then
+        interactPart = firstBasePartFrom(point)
+    end
+    if not interactPart then
+        return nil
+    end
+
+    local targetPos = interactPart.Position
+    local sideA = targetPos - (interactPart.CFrame.LookVector * 3.5) + Vector3.new(0, 1.8, 0)
+    local sideB = targetPos + (interactPart.CFrame.LookVector * 3.5) + Vector3.new(0, 1.8, 0)
+
+    local center2D = Vector3.new(dumbo3435_33.X, 0, dumbo3435_33.Z)
+    local distA = (Vector3.new(sideA.X, 0, sideA.Z) - center2D).Magnitude
+    local distB = (Vector3.new(sideB.X, 0, sideB.Z) - center2D).Magnitude
+    local standPos = distA <= distB and sideA or sideB
+
+    if not isSafeMapPosition(standPos) then
+        return nil
+    end
+
+    return CFrame.lookAt(standPos, targetPos), targetPos
+end
+
 local function dumbo3435_38(dumbo3435_39)
     local dumbo3435_40 = dumbo3435_18["Character"];
     if (not dumbo3435_40) then
@@ -936,24 +990,24 @@ while true do
         local dumbo3435_67 = dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"));
         if (not dumbo3435_67 and dumbo3435_30) then
             for dumbo3435_68, dumbo3435_69 in dumbo3435_30:GetChildren() do
-                local dumbo3435_70 = dumbo3435_69:FindFirstChild("InteractPart");
-                local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild("ProximityPrompt");
+                local dumbo3435_70 = dumbo3435_69:FindFirstChild("InteractPart", true);
+                local dumbo3435_71 = dumbo3435_70 and dumbo3435_70:FindFirstChild("ProximityPrompt", true);
                 if (dumbo3435_71 and dumbo3435_71["Enabled"]) then
-                    local standPos = dumbo3435_69:GetPivot().Position
-                    local playerPos = standPos + Vector3.new(0, 2, 4) -- Stand 4 studs back
-                    
-                    -- Orient player and camera to look directly at the fire extinguisher box
-                    dumbo3435_52["CFrame"] = CFrame.lookAt(playerPos, standPos)
-                    dumbo3435_19["CFrame"] = CFrame.lookAt(playerPos + Vector3.new(0, 2, 2), standPos)
-                    task.wait(0.4);
-                    
-                    local dumbo3435_72 = 0;
-                    while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"))) and (dumbo3435_72 < 15) do
-                        triggerPrompt(dumbo3435_71);
+                    local standCFrame, lookPos = getFireExtinguisherStandCFrame(dumbo3435_69)
+                    if standCFrame then
+                        -- Stand on the inside-map side of the InteractPart, never on the model pivot behind the map.
+                        safeSetRootCFrame(dumbo3435_52, standCFrame)
+                        dumbo3435_19["CFrame"] = CFrame.lookAt(standCFrame.Position + Vector3.new(0, 2, 2), lookPos)
                         task.wait(0.4);
-                        dumbo3435_72 = dumbo3435_72 + 1;
+
+                        local dumbo3435_72 = 0;
+                        while not (dumbo3435_51:FindFirstChild("Fire Extinguisher") or (dumbo3435_18["Backpack"] and dumbo3435_18["Backpack"]:FindFirstChild("Fire Extinguisher"))) and (dumbo3435_72 < 15) do
+                            triggerPrompt(dumbo3435_71);
+                            task.wait(0.4);
+                            dumbo3435_72 = dumbo3435_72 + 1;
+                        end
+                        break;
                     end
-                    break;
                 end
             end
         end
@@ -963,7 +1017,12 @@ while true do
             local dumbo3435_74 = dumbo3435_64:FindFirstChild("FirePart") or dumbo3435_64;
             local dumbo3435_75 = dumbo3435_74["Position"];
             local dumbo3435_76 = dumbo3435_74["Position"] + Vector3.new(0, 2, 4);
-            dumbo3435_52["CFrame"] = CFrame.lookAt(dumbo3435_76, dumbo3435_75);
+            if not isSafeMapPosition(dumbo3435_76) then
+                safeSetRootCFrame(dumbo3435_52, cframeCenter);
+                task.wait(0.5);
+                continue;
+            end
+            safeSetRootCFrame(dumbo3435_52, CFrame.lookAt(dumbo3435_76, dumbo3435_75));
             dumbo3435_19["CFrame"] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 2), dumbo3435_75);
             task.wait(0.3);
             if dumbo3435_21 then
@@ -982,8 +1041,10 @@ while true do
             local jail = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("JailEssentials")
             local prisoner = jail and jail:FindFirstChild("Prisoner2")
             local dumbo3435_78 = prisoner and prisoner:FindFirstChild("HumanoidRootPart");
-            if (dumbo3435_78) then
-                dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
+            if (dumbo3435_78 and isSafeMapPosition(dumbo3435_78.Position)) then
+                safeSetRootCFrame(dumbo3435_52, dumbo3435_78["CFrame"]);
+            else
+                safeSetRootCFrame(dumbo3435_52, cframeCenter);
             end
             task.wait(0.5);
             continue;
@@ -1011,8 +1072,10 @@ while true do
         local jail = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("JailEssentials")
         local prisoner = jail and jail:FindFirstChild("Prisoner2")
         local dumbo3435_78 = prisoner and prisoner:FindFirstChild("HumanoidRootPart");
-        if (dumbo3435_78) then
-            dumbo3435_52["CFrame"] = dumbo3435_78["CFrame"];
+        if (dumbo3435_78 and isSafeMapPosition(dumbo3435_78.Position)) then
+            safeSetRootCFrame(dumbo3435_52, dumbo3435_78["CFrame"]);
+        else
+            safeSetRootCFrame(dumbo3435_52, cframeCenter);
         end
         task.wait(0.5);
         continue;
