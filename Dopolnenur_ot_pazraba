@@ -204,9 +204,28 @@ end)
 local scriptActive = true
 local autofarmEnabled = true
 
+-- Connection tracker dictionary (keys: NPC models, values: connections)
+-- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
+local dumbo3435_connections = {}
+
 local function unloadCheat()
     scriptActive = false
     autofarmEnabled = false
+    
+    -- Disconnect all active property change connections
+    for npc, conn in pairs(dumbo3435_connections) do
+        if conn then
+            pcall(function() conn:Disconnect() end)
+        end
+        -- Restore original walkspeeds to all active NPCs
+        if npc and npc.Parent then
+            local hum = npc:FindFirstChildOfClass("Humanoid")
+            if hum then
+                pcall(function() hum.WalkSpeed = 12 end)
+            end
+        end
+    end
+    table.clear(dumbo3435_connections)
     
     -- Destroy the ScreenGui completely
     if ScreenGui then
@@ -299,9 +318,15 @@ local cframeID = CFrame.new(-58.8363342, 3.00000024, -22.6157169, -0.0523362495,
 
 local dumbo3435_33 = cframeCenter.Position;
 
+local dumbo3435_34 = {};
+
 local pressingButtons = false;
 local currentPodium = "ID"; -- Alternates between "ID" and "MD" when both have passengers
 local stateStartTime = os.clock();
+
+-- Prompt click safety cooldown trackers
+local lastTriggerTimeID = 0
+local lastTriggerTimeMD = 0
 
 local function dumbo3435_35()
     for dumbo3435_36, dumbo3435_37 in dumbo3435_29 do
@@ -354,6 +379,73 @@ local function dumbo3435_38(dumbo3435_39)
         end
     end
     return dumbo3435_40:FindFirstChild(dumbo3435_39);
+end
+
+local function dumbo3435_45(dumbo3435_46)
+    if dumbo3435_34[dumbo3435_46] then
+        return;
+    end
+    local dumbo3435_47 = dumbo3435_46:FindFirstChild("HumanoidRootPart");
+    local dumbo3435_48 = dumbo3435_46:FindFirstChildOfClass("Humanoid");
+    if (not dumbo3435_47) then
+        return;
+    end
+    dumbo3435_34[dumbo3435_46] = true;
+    if (dumbo3435_48) then
+        dumbo3435_48["WalkSpeed"] = 0;
+        dumbo3435_48["PlatformStand"] = true;
+        -- Maintain freeze on WalkSpeed change
+        if not dumbo3435_46:GetAttribute("FreezeSetupDone") then
+            dumbo3435_46:SetAttribute("FreezeSetupDone", true)
+            local conn
+            conn = dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if dumbo3435_48.WalkSpeed ~= 0 then
+                    dumbo3435_48.WalkSpeed = 0
+                end
+            end)
+            dumbo3435_connections[dumbo3435_46] = conn
+            
+            -- Connection cleanup on NPC removal (prevents memory leak)
+            dumbo3435_46.AncestryChanged:Connect(function(_, parent)
+                if not parent then
+                    if dumbo3435_connections[dumbo3435_46] then
+                        pcall(function() dumbo3435_connections[dumbo3435_46]:Disconnect() end)
+                        dumbo3435_connections[dumbo3435_46] = nil
+                    end
+                end
+            end)
+        end
+    end
+    task.spawn(function()
+        local dumbo3435_49 = 0;
+        while dumbo3435_46["Parent"] and (dumbo3435_47["Position"]['Y'] > -100) and (dumbo3435_49 < 50) do
+            dumbo3435_47["CFrame"] = dumbo3435_47["CFrame"] - Vector3.new(0, 150, 0);
+            task.wait(0.1);
+            dumbo3435_49 = dumbo3435_49 + 1;
+        end
+        dumbo3435_34[dumbo3435_46] = nil;
+    end);
+end
+
+-- Checks if passenger is near any desk counter
+local function isNPCNearDesk(npc)
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    
+    local npcPos = hrp.Position
+    local idPos = dumbo3435_25 and dumbo3435_25.Parent and dumbo3435_25.Parent.Position
+    local mdPos = dumbo3435_23 and dumbo3435_23.Parent and dumbo3435_23.Parent.Position
+    
+    if idPos then
+        local dist = (Vector3.new(npcPos.X, 0, npcPos.Z) - Vector3.new(idPos.X, 0, idPos.Z)).Magnitude
+        if dist < 6.0 then return true end
+    end
+    if mdPos then
+        local dist = (Vector3.new(npcPos.X, 0, npcPos.Z) - Vector3.new(mdPos.X, 0, mdPos.Z)).Magnitude
+        if dist < 6.0 then return true end
+    end
+    
+    return false
 end
 
 -- Strictly check if NPC is a valid living passenger who is NOT a criminal
@@ -410,6 +502,97 @@ while true do
     -- If script active local variable is set to false, end loop immediately (safe from race conditions)
     if not scriptActive then
         break
+    end
+
+    -- Passive check/update of NPC speeds (innocents accelerated, hostiles/criminals frozen)
+    -- This section runs CONTINUOUSLY regardless of Autofarm toggle state so you don't lose the game!
+    if dumbo3435_17 then
+        for dumbo3435_53, dumbo3435_54 in dumbo3435_17:GetChildren() do
+            if (dumbo3435_54["Name"] == "EnemyNPC" or dumbo3435_54["Name"] == "FSEnemyNPC" or dumbo3435_54["Name"] == "BossNPC") then
+                dumbo3435_45(dumbo3435_54);
+            end
+        end
+    end
+    
+    if dumbo3435_16 then
+        for dumbo3435_55, dumbo3435_56 in dumbo3435_16:GetChildren() do
+            dumbo3435_45(dumbo3435_56);
+        end
+    end
+    
+    if dumbo3435_15 then
+        for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
+            if (not dumbo3435_34[dumbo3435_58]) then
+                local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
+                if dumbo3435_59 then
+                    local properties = dumbo3435_58:FindFirstChild("Properties")
+                    local randVars = properties and properties:FindFirstChild("RandomVariables")
+                    
+                    if randVars then
+                        -- passenger properties loaded, check criminal state
+                        local fakePassport = randVars:FindFirstChild("FakePassport")
+                        local contrabandReal = randVars:FindFirstChild("ContrabandReal")
+                        local hasWeapon = randVars:FindFirstChild("Weapon") or 
+                                          randVars:FindFirstChild("WeaponReal") or 
+                                          randVars:FindFirstChild("HasWeapon") or 
+                                          randVars:FindFirstChild("WeaponContraband") or
+                                          randVars:FindFirstChild("Contraband")
+                                          
+                        local isCriminal = (fakePassport and fakePassport.Value == true) or
+                                           (contrabandReal and contrabandReal.Value == true) or
+                                           (hasWeapon and hasWeapon.Value == true)
+                                           
+                        if isCriminal then
+                            -- Criminal: Freeze them
+                            dumbo3435_45(dumbo3435_58)
+                        else
+                            -- Innocent Passenger speed control based on MoveDirection
+                            if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                                dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                                
+                                -- Initial speed setup
+                                if dumbo3435_59.MoveDirection.Magnitude > 0 then
+                                    dumbo3435_59.WalkSpeed = 24
+                                else
+                                    dumbo3435_59.WalkSpeed = 12
+                                end
+                                
+                                -- Listen to MoveDirection changes to dynamically adjust WalkSpeed
+                                -- If MoveDirection is > 0 (walking), speed them up.
+                                -- If MoveDirection is 0 (standing in line/desk), release to default so they stand still!
+                                local conn
+                                conn = dumbo3435_59:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+                                    if dumbo3435_59.MoveDirection.Magnitude > 0 then
+                                        dumbo3435_59.WalkSpeed = 24
+                                    else
+                                        dumbo3435_59.WalkSpeed = 12
+                                    end
+                                end)
+                                dumbo3435_connections[dumbo3435_58] = conn
+                                
+                                dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                                    if not parent then
+                                        if dumbo3435_connections[dumbo3435_58] == conn then
+                                            pcall(function() conn:Disconnect() end)
+                                            dumbo3435_connections[dumbo3435_58] = nil
+                                        end
+                                    end
+                                end)
+                            else
+                                -- Fallback updates for already setup characters
+                                if dumbo3435_59.MoveDirection.Magnitude > 0 then
+                                    dumbo3435_59.WalkSpeed = 24
+                                else
+                                    dumbo3435_59.WalkSpeed = 12
+                                end
+                            end
+                        end
+                    else
+                        -- Properties not loaded yet (or static staff NPC) -> wait and do not freeze
+                    end
+                end
+            end
+        end
     end
 
     -- If Autofarm is disabled via GUI button, pause player movement and wait
@@ -627,7 +810,12 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                triggerPrompt(dumbo3435_25)
+                -- Click prompt once every 2 seconds to prevent spam glitches
+                local now = os.clock()
+                if now - lastTriggerTimeID > 2.0 then
+                    lastTriggerTimeID = now
+                    triggerPrompt(dumbo3435_25)
+                end
             elseif targetPodium == "MD" and dumbo3435_23 then
                 pressingButtons = true
                 local targetCFrame = cframeMD
@@ -652,7 +840,12 @@ while true do
                     dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
                 end)
                 
-                triggerPrompt(dumbo3435_23)
+                -- Click prompt once every 2 seconds to prevent spam glitches
+                local now = os.clock()
+                if now - lastTriggerTimeMD > 2.0 then
+                    lastTriggerTimeMD = now
+                    triggerPrompt(dumbo3435_23)
+                end
             end
         else
             pressingButtons = false
