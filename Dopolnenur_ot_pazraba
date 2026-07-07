@@ -244,10 +244,10 @@ FloatBtn.MouseButton1Click:Connect(function()
     FloatBtn.Visible = false
 end)
 
--- Script state local variables (avoids global race conditions on re-execution)
+-- Script state local variables - restore from _G to persist state across teleports
 local scriptActive = true
-local autofarmEnabled = true
-local godModeEnabled = false
+local autofarmEnabled = (_G.AG_autofarmEnabled ~= nil) and _G.AG_autofarmEnabled or true
+local godModeEnabled  = (_G.AG_godModeEnabled  ~= nil) and _G.AG_godModeEnabled  or false
 
 -- Connection tracker dictionary (keys: NPC models, values: connections)
 -- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
@@ -280,8 +280,25 @@ local function unloadCheat()
     print("Secure the Airport: Cheat fully stopped and unloaded!")
 end
 
+-- Restore button visuals from saved state on startup
+if autofarmEnabled then
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
+    ToggleBtn.Text = "AUTOFARM: ENABLED"
+else
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(140, 35, 35)
+    ToggleBtn.Text = "AUTOFARM: DISABLED"
+end
+if godModeEnabled then
+    GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
+    GodModeBtn.Text = "GOD MODE: ON \u2665"
+else
+    GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
+    GodModeBtn.Text = "GOD MODE: OFF"
+end
+
 ToggleBtn.MouseButton1Click:Connect(function()
     autofarmEnabled = not autofarmEnabled
+    _G.AG_autofarmEnabled = autofarmEnabled  -- save state
     if autofarmEnabled then
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
         ToggleBtn.Text = "AUTOFARM: ENABLED"
@@ -293,9 +310,10 @@ end)
 
 GodModeBtn.MouseButton1Click:Connect(function()
     godModeEnabled = not godModeEnabled
+    _G.AG_godModeEnabled = godModeEnabled  -- save state
     if godModeEnabled then
         GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
-        GodModeBtn.Text = "GOD MODE: ON ♥"
+        GodModeBtn.Text = "GOD MODE: ON \u2665"
     else
         GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
         GodModeBtn.Text = "GOD MODE: OFF"
