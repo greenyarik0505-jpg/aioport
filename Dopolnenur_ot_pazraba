@@ -270,7 +270,10 @@ local lobbyTextNeedles = {"жд", "игрок", "players", "waiting", "wait", "p
 local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "startcircle", "lobbycircle", "party", "join", "teleport", "pad"}
 local startButtonNeedles = {"созд", "создать", "старт", "начать", "create", "start", "play", "confirm", "ready", "party"}
 local lobbyLoopDelay = 0.15
-local startClickRetryDelay = 0.9
+local postTeleportStartDelay = 0.20
+local startClickInterval = 1.0
+local lastLobbyTeleportTime = 0
+local lastStartClickTime = 0
 
 local function stringHasAnyNeedle(value, needles)
     if type(value) ~= "string" then
@@ -493,6 +496,7 @@ task.spawn(function()
                         if touchCFrame and (hrp.Position - touchCFrame.Position).Magnitude > 3.0 then
                             -- Stand exactly on the pad's top surface + 0.5 Y so Touch reliably registers.
                             hrp.CFrame = touchCFrame
+                            lastLobbyTeleportTime = os.clock()
                             task.wait(0.1)
                             if firetouchinterest and target:IsA("BasePart") then
                                 pcall(function()
@@ -506,15 +510,15 @@ task.spawn(function()
                 end
                 
                 -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
-                local startBtn = findLobbyStartButton()
-                if startBtn then
-                    clickGuiButton(startBtn)
-                    task.wait(startClickRetryDelay)
-                    local retryBtn = findLobbyStartButton()
-                    if retryBtn then
-                        clickGuiButton(retryBtn)
+                local now = os.clock()
+                local canClickAfterTeleport = (now - lastLobbyTeleportTime) >= postTeleportStartDelay
+                local canClickByInterval = (now - lastStartClickTime) >= startClickInterval
+                if canClickAfterTeleport and canClickByInterval then
+                    local startBtn = findLobbyStartButton()
+                    if startBtn then
+                        lastStartClickTime = now
+                        clickGuiButton(startBtn)
                     end
-                    task.wait(0.15)
                 end
             end
         end
