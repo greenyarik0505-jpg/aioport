@@ -326,48 +326,83 @@ local function findLobbyCircle()
     return nil
 end
 
--- Auto-Lobby creator loop: runs independently in background
+-- Helper: Find the CREATE/START lobby button in PlayerGui (even if inside ImageButton or nested labels)
+local function findLobbyStartButton()
+    for _, desc in ipairs(PlayerGui:GetDescendants()) do
+        if desc:IsA("TextButton") or desc:IsA("ImageButton") then
+            -- Verify ScreenGui is enabled and button has a physical size
+            local screenGui = desc:FindFirstAncestorOfClass("ScreenGui")
+            if screenGui and screenGui.Enabled and desc.AbsoluteSize.X > 0 then
+                -- Check button name
+                local name = desc.Name:lower()
+                if string.find(name, "create") or string.find(name, "start") or string.find(name, "confirm") then
+                    return desc
+                end
+                
+                -- Check button text
+                if desc:IsA("TextButton") then
+                    local text = desc.Text:lower()
+                    if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                        return desc
+                    end
+                end
+                
+                -- Check children labels (common inside ImageButtons)
+                for _, child in ipairs(desc:GetChildren()) do
+                    if child:IsA("TextLabel") then
+                        local text = child.Text:lower()
+                        if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                            return desc
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Auto-Lobby creator loop: runs independently in background (respects autofarm toggle state)
 task.spawn(function()
     while task.wait(0.5) do
         if not scriptActive then break end
         
-        -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
-        local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
-        local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
-        
-        if isLobby then
-            -- 1. Automatically teleport player onto the lobby elevator circle
-            local char = LocalPlayer.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local target = findElevatorByText() or findLobbyCircle()
-                if target then
-                    local targetPos = target:GetPivot().Position
-                    if (hrp.Position - targetPos).Magnitude > 5.0 then
-                        hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2.0, 0))
+        -- Respect Autofarm Enabled toggle status
+        if autofarmEnabled then
+            -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
+            local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
+            local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
+            
+            if isLobby then
+                -- 1. Automatically teleport player onto the lobby elevator circle
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local target = findElevatorByText() or findLobbyCircle()
+                    if target then
+                        local targetPos = target:GetPivot().Position
+                        if (hrp.Position - targetPos).Magnitude > 5.0 then
+                            hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2.0, 0))
+                        end
                     end
                 end
-            end
-            
-            -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
-            for _, desc in ipairs(PlayerGui:GetDescendants()) do
-                if desc:IsA("TextButton") and desc.Visible and desc.AbsoluteSize.X > 0 then
-                    local text = desc.Text:lower()
-                    if text == "создать" or text == "create" or string.find(text, "создать") or string.find(text, "create") then
-                        pcall(function()
-                            desc:MouseButton1Click()
-                            -- Exploit compatibility simulation
-                            local events = {"MouseButton1Down", "MouseButton1Up", "MouseButton1Click", "Activated"}
-                            for _, event in ipairs(events) do
-                                pcall(function()
-                                    for _, connection in ipairs(getconnections(desc[event])) do
-                                        connection:Fire()
-                                    end
-                                end)
-                            end
-                        end)
-                        task.wait(1.0)
-                    end
+                
+                -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
+                local startBtn = findLobbyStartButton()
+                if startBtn then
+                    pcall(function()
+                        startBtn:MouseButton1Click()
+                        -- Exploit compatibility simulation
+                        local events = {"MouseButton1Down", "MouseButton1Up", "MouseButton1Click", "Activated"}
+                        for _, event in ipairs(events) do
+                            pcall(function()
+                                for _, connection in ipairs(getconnections(startBtn[event])) do
+                                    connection:Fire()
+                                end
+                            end)
+                        end
+                    end)
+                    task.wait(1.0)
                 end
             end
         end
