@@ -338,6 +338,15 @@ local function dumbo3435_45(dumbo3435_46)
     if (dumbo3435_48) then
         dumbo3435_48["WalkSpeed"] = 0;
         dumbo3435_48["PlatformStand"] = true;
+        -- Maintain freeze on WalkSpeed change
+        if not dumbo3435_46:GetAttribute("FreezeSetupDone") then
+            dumbo3435_46:SetAttribute("FreezeSetupDone", true)
+            dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if dumbo3435_48.WalkSpeed ~= 0 then
+                    dumbo3435_48.WalkSpeed = 0
+                end
+            end)
+        end
     end
     task.spawn(function()
         local dumbo3435_49 = 0;
@@ -353,30 +362,8 @@ end
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
-    -- If UI turned off the autofarm, pause and wait
-    if not _G.AutofarmEnabled then
-        pressingButtons = false
-        task.wait(0.5)
-        continue
-    end
-
-    if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
-        local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
-        if (dumbo3435_50 and dumbo3435_50["Visible"]) then
-            local text = dumbo3435_50["Text"]:lower()
-            if string.find(text, "airport") or string.find(text, "аэропорт") or string.find(text, "secured") or string.find(text, "защитили") or string.find(text, "выиграли") then
-                task.wait(3);
-                if dumbo3435_20 then
-                    dumbo3435_20:FireServer();
-                end
-                break;
-            end
-        end
-    end
-    
-    local dumbo3435_51 = dumbo3435_18["Character"];
-    local dumbo3435_52 = dumbo3435_51 and dumbo3435_51:FindFirstChild("HumanoidRootPart");
-    
+    -- Passive check/update of NPC speeds (innocents accelerated, hostiles/criminals frozen)
+    -- This section runs CONTINUOUSLY regardless of Autofarm toggle state so you don't lose the game!
     if dumbo3435_17 then
         for dumbo3435_53, dumbo3435_54 in dumbo3435_17:GetChildren() do
             if (dumbo3435_54["Name"] == "EnemyNPC" or dumbo3435_54["Name"] == "FSEnemyNPC" or dumbo3435_54["Name"] == "BossNPC") then
@@ -407,27 +394,52 @@ while true do
                                       dumbo3435_61:FindFirstChild("WeaponContraband") or
                                       dumbo3435_61:FindFirstChild("Contraband");
                     
-                    if not _G.PrintedVars then
-                        _G.PrintedVars = {}
-                    end
-                    for _, child in ipairs(dumbo3435_61:GetChildren()) do
-                        if not _G.PrintedVars[child.Name] then
-                            _G.PrintedVars[child.Name] = true
-                            print("Secure the Airport: Variable found:", child.Name, "Value:", tostring(child.Value))
-                        end
-                    end
-                    
                     if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or 
                         (dumbo3435_63 and (dumbo3435_63["Value"] == true)) or
                         (hasWeapon and (hasWeapon["Value"] == true))) then
                         dumbo3435_45(dumbo3435_58);
                     else
-                        dumbo3435_59["WalkSpeed"] = 32;
+                        -- Accelerated WalkSpeed connection to prevent game scripts from resetting it to slow speeds
+                        if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                            dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                            dumbo3435_59.WalkSpeed = 32
+                            dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                                if dumbo3435_59.WalkSpeed ~= 32 then
+                                    dumbo3435_59.WalkSpeed = 32
+                                end
+                            end)
+                        else
+                            dumbo3435_59.WalkSpeed = 32
+                        end
                     end
                 end
             end
         end
     end
+
+    -- If Autofarm is disabled via GUI button, pause player movement and wait
+    if not _G.AutofarmEnabled then
+        pressingButtons = false
+        task.wait(0.2)
+        continue
+    end
+
+    if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
+        local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
+        if (dumbo3435_50 and dumbo3435_50["Visible"]) then
+            local text = dumbo3435_50["Text"]:lower()
+            if string.find(text, "airport") or string.find(text, "аэропорт") or string.find(text, "secured") or string.find(text, "защитили") or string.find(text, "выиграли") then
+                task.wait(3);
+                if dumbo3435_20 then
+                    dumbo3435_20:FireServer();
+                end
+                break;
+            end
+        end
+    end
+    
+    local dumbo3435_51 = dumbo3435_18["Character"];
+    local dumbo3435_52 = dumbo3435_51 and dumbo3435_51:FindFirstChild("HumanoidRootPart");
     
     local dumbo3435_64 = nil;
     for dumbo3435_65, dumbo3435_66 in dumbo3435_29 do
