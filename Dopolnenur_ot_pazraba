@@ -271,10 +271,8 @@ local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "start
 local startButtonNeedles = {"созд", "создать", "старт", "начать", "create", "start", "play", "confirm", "ready", "party"}
 local lobbyLoopDelay = 0.15
 local preTeleportDelay = 5.0
-local postTeleportStartDelay = 5.0
-local startClickInterval = 1.0
+local startClickInterval = 0.33
 local pendingLobbyTeleportSince = 0
-local lastLobbyTeleportTime = 0
 local lastStartClickTime = 0
 
 local function stringHasAnyNeedle(value, needles)
@@ -495,6 +493,15 @@ task.spawn(function()
         
         -- Respect Autofarm Enabled toggle status
         if autofarmEnabled then
+            -- Click the CREATE/START button whenever it is visibly present. This stays separate
+            -- from teleport checks so a lobby GUI cannot be blocked by map/round detection.
+            local now = os.clock()
+            local startBtn = findLobbyStartButton()
+            if startBtn and (now - lastStartClickTime) >= startClickInterval then
+                lastStartClickTime = now
+                clickGuiButton(startBtn)
+            end
+
             -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
             local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
             local isLobby = (not hasActiveRoundReturnButton()) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
@@ -521,7 +528,6 @@ task.spawn(function()
                                 hrp.CFrame = touchCFrame
                                 pendingLobbyTeleportSince = 0
                                 lobbyTeleportPending = false
-                                lastLobbyTeleportTime = os.clock()
                                 task.wait(0.1)
                                 if firetouchinterest and target:IsA("BasePart") then
                                     pcall(function()
@@ -539,17 +545,7 @@ task.spawn(function()
                     end
                 end
                 
-                -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
-                local now = os.clock()
-                local canClickAfterTeleport = (now - lastLobbyTeleportTime) >= postTeleportStartDelay
-                local canClickByInterval = (now - lastStartClickTime) >= startClickInterval
-                if not lobbyTeleportPending and canClickAfterTeleport and canClickByInterval then
-                    local startBtn = findLobbyStartButton()
-                    if startBtn then
-                        lastStartClickTime = now
-                        clickGuiButton(startBtn)
-                    end
-                end
+                -- 2. Button click is handled above every second when the CREATE/START GUI is visible.
             end
         end
     end
