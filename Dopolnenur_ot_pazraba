@@ -423,8 +423,8 @@ local function dumbo3435_45(dumbo3435_46)
     end);
 end
 
--- Strictly check if NPC is a valid living passenger with custom random variables
-local function isValidPassenger(npc)
+-- Strictly check if NPC is a valid living passenger who is NOT a criminal
+local function isNPCNormalPassenger(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
     if not humanoid or humanoid.Health <= 0 then return false end
     
@@ -432,7 +432,22 @@ local function isValidPassenger(npc)
     local randVars = properties and properties:FindFirstChild("RandomVariables")
     if not randVars then return false end
     
-    return true
+    -- Check if they are classified as a criminal
+    local fakePassport = randVars:FindFirstChild("FakePassport")
+    local contrabandReal = randVars:FindFirstChild("ContrabandReal")
+    local hasWeapon = randVars:FindFirstChild("Weapon") or 
+                      randVars:FindFirstChild("WeaponReal") or 
+                      randVars:FindFirstChild("HasWeapon") or 
+                      randVars:FindFirstChild("WeaponContraband") or
+                      randVars:FindFirstChild("Contraband")
+                      
+    if (fakePassport and fakePassport.Value == true) or
+       (contrabandReal and contrabandReal.Value == true) or
+       (hasWeapon and hasWeapon.Value == true) then
+        return false -- Criminal!
+    end
+    
+    return true -- Innocent!
 end
 
 -- Mathematically check if the passenger is actually waiting in line (on the queue side of the desk)
@@ -484,49 +499,35 @@ while true do
         for dumbo3435_57, dumbo3435_58 in dumbo3435_15:GetChildren() do
             if (not dumbo3435_34[dumbo3435_58]) then
                 local dumbo3435_59 = dumbo3435_58:FindFirstChildOfClass("Humanoid");
-                if dumbo3435_59 and isValidPassenger(dumbo3435_58) then
-                    -- Accelerated WalkSpeed set to 24 (instead of 32) to prevent pathfinding overshoot and stuttering at node arrivals
-                    if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
-                        dumbo3435_58:SetAttribute("SpeedSetupDone", true)
-                        dumbo3435_59.WalkSpeed = 24
-                        local conn
-                        conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                            if dumbo3435_59.WalkSpeed ~= 24 then
-                                dumbo3435_59.WalkSpeed = 24
-                            end
-                        end)
-                        dumbo3435_connections[dumbo3435_58] = conn
-                        
-                        -- Connection cleanup on NPC removal (prevents memory leak)
-                        dumbo3435_58.AncestryChanged:Connect(function(_, parent)
-                            if not parent then
-                                if dumbo3435_connections[dumbo3435_58] then
-                                    pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
-                                    dumbo3435_connections[dumbo3435_58] = nil
+                if dumbo3435_59 then
+                    if isNPCNormalPassenger(dumbo3435_58) then
+                        -- Innocent Passenger: Accelerated WalkSpeed set to 24 (instead of 32) for smooth stops
+                        if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
+                            dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                            dumbo3435_59.WalkSpeed = 24
+                            local conn
+                            conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                                if dumbo3435_59.WalkSpeed ~= 24 then
+                                    dumbo3435_59.WalkSpeed = 24
                                 end
-                            end
-                        end)
-                    else
-                        dumbo3435_59.WalkSpeed = 24
-                    end
-                elseif dumbo3435_59 then
-                    -- If they have properties that mark them as criminals, freeze them
-                    local properties = dumbo3435_58:FindFirstChild("Properties")
-                    local randVars = properties and properties:FindFirstChild("RandomVariables")
-                    if randVars then
-                        local dumbo3435_62 = randVars:FindFirstChild("FakePassport");
-                        local dumbo3435_63 = randVars:FindFirstChild("ContrabandReal");
-                        local hasWeapon = randVars:FindFirstChild("Weapon") or 
-                                          randVars:FindFirstChild("WeaponReal") or 
-                                          randVars:FindFirstChild("HasWeapon") or 
-                                          randVars:FindFirstChild("WeaponContraband") or
-                                          randVars:FindFirstChild("Contraband");
-                        
-                        if ((dumbo3435_62 and (dumbo3435_62["Value"] == true)) or 
-                            (dumbo3435_63 and (dumbo3435_63["Value"] == true)) or
-                            (hasWeapon and (hasWeapon["Value"] == true))) then
-                            dumbo3435_45(dumbo3435_58);
+                            end)
+                            dumbo3435_connections[dumbo3435_58] = conn
+                            
+                            -- Connection cleanup on NPC removal (prevents memory leak)
+                            dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                                if not parent then
+                                    if dumbo3435_connections[dumbo3435_58] then
+                                        pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
+                                        dumbo3435_connections[dumbo3435_58] = nil
+                                    end
+                                end
+                            end)
+                        else
+                            dumbo3435_59.WalkSpeed = 24
                         end
+                    else
+                        -- Criminal or Hostile: Freeze them instantly so they cannot slide or bug out when arrested
+                        dumbo3435_45(dumbo3435_58);
                     end
                 end
             end
@@ -667,7 +668,7 @@ while true do
                 local idPos = dumbo3435_25.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        if isValidPassenger(npc) and isPassengerInQueue(npc, idPos) then
+                        if isNPCNormalPassenger(npc) and isPassengerInQueue(npc, idPos) then
                             idQueue = idQueue + 1
                         end
                     end
@@ -678,7 +679,7 @@ while true do
                 local mdPos = dumbo3435_23.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        if isValidPassenger(npc) and isPassengerInQueue(npc, mdPos) then
+                        if isNPCNormalPassenger(npc) and isPassengerInQueue(npc, mdPos) then
                             mdQueue = mdQueue + 1
                         end
                     end
