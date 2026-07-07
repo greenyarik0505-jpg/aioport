@@ -22,6 +22,7 @@ print("Secure the Airport: Initializing UI Menu...")
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15)
 
@@ -80,7 +81,7 @@ local function makeDraggable(frame, parentFrame)
         end
     end)
     
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             update(input)
         end
@@ -266,14 +267,32 @@ DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
 end)
 
+-- Keep mouse free so Roblox does not lock it to the center during autofarm.
+task.spawn(function()
+    while task.wait(0.1) do
+        if not scriptActive or _G.AntigravityExecutionID ~= executionID then
+            break
+        end
+        pcall(function()
+            UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+            UserInputService.MouseIconEnabled = true
+        end)
+    end
+end)
+
 local lobbyTextNeedles = {"жд", "игрок", "players", "waiting", "wait", "player"}
 local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "startcircle", "lobbycircle", "party", "join", "teleport", "pad"}
 local startButtonNeedles = {"созд", "создать", "старт", "начать", "create", "start", "play", "confirm", "ready", "party"}
 local lobbyLoopDelay = 0.15
-local preTeleportDelay = 5.0
-local startClickInterval = 0.33
-local pendingLobbyTeleportSince = 0
+local startClickInterval = 1.0
 local lastStartClickTime = 0
+local lobbyTeleportDelay = 0.5
+local lobbyTeleportTriggerRadius = 0.75
+local pendingLobbyTeleportSince = 0
+local lobbyTeleportTriggerPositions = {
+    Vector3.new(-32.822117, 3.100000, -7.076836),
+    Vector3.new(-52.833706, 3.100000, -28.481833),
+}
 
 local function stringHasAnyNeedle(value, needles)
     if type(value) ~= "string" then
@@ -363,6 +382,37 @@ local function getLobbyTouchCFrame(target)
     local targetPos = part.Position
     local topY = targetPos.Y + (part.Size.Y / 2)
     return CFrame.new(Vector3.new(targetPos.X, topY + 0.5, targetPos.Z))
+end
+
+local function isNearLobbyTeleportTrigger(pos)
+    if not pos then
+        return false
+    end
+
+    local pos2D = Vector3.new(pos.X, 0, pos.Z)
+    for _, triggerPos in ipairs(lobbyTeleportTriggerPositions) do
+        local trigger2D = Vector3.new(triggerPos.X, 0, triggerPos.Z)
+        if (pos2D - trigger2D).Magnitude <= lobbyTeleportTriggerRadius then
+            return true
+        end
+    end
+    return false
+end
+
+local function getClosestLobbyTriggerCFrame(pos)
+    local closest = lobbyTeleportTriggerPositions[1]
+    local closestDist = math.huge
+    local pos2D = pos and Vector3.new(pos.X, 0, pos.Z) or nil
+
+    for _, triggerPos in ipairs(lobbyTeleportTriggerPositions) do
+        local dist = pos2D and (pos2D - Vector3.new(triggerPos.X, 0, triggerPos.Z)).Magnitude or 0
+        if dist < closestDist then
+            closestDist = dist
+            closest = triggerPos
+        end
+    end
+
+    return CFrame.new(closest)
 end
 
 -- Helper: Check if GUI is visible by walking every parent, including folders and ScreenGui.Enabled.
@@ -493,11 +543,15 @@ task.spawn(function()
         
         -- Respect Autofarm Enabled toggle status
         if autofarmEnabled then
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local isOnLobbyButtonSpot = hrp and isNearLobbyTeleportTrigger(hrp.Position)
+
             -- Click the CREATE/START button whenever it is visibly present. This stays separate
             -- from teleport checks so a lobby GUI cannot be blocked by map/round detection.
             local now = os.clock()
             local startBtn = findLobbyStartButton()
-            if startBtn and (now - lastStartClickTime) >= startClickInterval then
+            if startBtn and isOnLobbyButtonSpot and (now - lastStartClickTime) >= startClickInterval then
                 lastStartClickTime = now
                 clickGuiButton(startBtn)
             end
@@ -507,45 +561,22 @@ task.spawn(function()
             local isLobby = (not hasActiveRoundReturnButton()) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
             
             if isLobby then
-                local lobbyTeleportPending = false
+                -- 1. Put player exactly on the lobby button spot after a short 0.5s settle delay.
+                local target = findElevatorByText()
+                if hrp and target and not isOnLobbyButtonSpot then
+                    if pendingLobbyTeleportSince == 0 then
+                        pendingLobbyTeleportSince = now
+                    end
 
-                -- 1. Automatically teleport player onto the lobby elevator circle (stand directly on surface)
-                local char = LocalPlayer.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local target = findElevatorByText()
-                    if target then
-                        local touchCFrame = getLobbyTouchCFrame(target)
-                        if touchCFrame and (hrp.Position - touchCFrame.Position).Magnitude > 3.0 then
-                            local now = os.clock()
-                            lobbyTeleportPending = true
-                            if pendingLobbyTeleportSince == 0 then
-                                pendingLobbyTeleportSince = now
-                            end
-
-                            if (now - pendingLobbyTeleportSince) >= preTeleportDelay then
-                                -- Stand exactly on the pad's top surface + 0.5 Y so Touch reliably registers.
-                                hrp.CFrame = touchCFrame
-                                pendingLobbyTeleportSince = 0
-                                lobbyTeleportPending = false
-                                task.wait(0.1)
-                                if firetouchinterest and target:IsA("BasePart") then
-                                    pcall(function()
-                                        firetouchinterest(hrp, target, 0)
-                                        task.wait(0.05)
-                                        firetouchinterest(hrp, target, 1)
-                                    end)
-                                end
-                            end
-                        else
-                            pendingLobbyTeleportSince = 0
-                        end
-                    else
+                    if (now - pendingLobbyTeleportSince) >= lobbyTeleportDelay then
+                        hrp.CFrame = getClosestLobbyTriggerCFrame(hrp.Position)
                         pendingLobbyTeleportSince = 0
                     end
+                else
+                    pendingLobbyTeleportSince = 0
                 end
                 
-                -- 2. Button click is handled above every second when the CREATE/START GUI is visible.
+                -- 2. Button click is handled above once per second only while standing on the exact button spot.
             end
         end
     end
@@ -614,8 +645,8 @@ local dumbo3435_21 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13
 
 -- Static CFrames obtained directly from the player's character in-game
 local cframeCenter = CFrame.new(-54.345211, 3.00000024, -6.39607954, 0.60876298, 2.20848229e-08, -0.793352187, -4.42953976e-08, 1, -6.15183815e-09, 0.793352187, 3.888686e-08, 0.60876298)
-local cframeMD = CFrame.new(-41.6090355, 3.00000024, -5.88942528, -0.156434447, -6.73699816e-08, -0.987688363, -5.03442728e-08, 1, -6.02360117e-08, 0.987688363, 4.03014653e-08, -0.156434447)
-local cframeID = CFrame.new(-58.8363342, 3.00000024, -22.6157169, -0.0523362495, -4.32435288e-09, -0.99862951, 3.60094994e-08, 1, -6.21747587e-09, 0.99862951, -3.62855488e-08, -0.0523362495)
+local cframeMD = CFrame.new(-32.822117, 3.100000, -7.076836) -- вещевой контроль
+local cframeID = CFrame.new(-52.833706, 3.100000, -28.481833) -- паспортный контроль
 
 local dumbo3435_33 = cframeCenter.Position;
 
