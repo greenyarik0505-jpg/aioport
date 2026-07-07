@@ -546,13 +546,13 @@ while true do
                             -- Criminal: Freeze them
                             dumbo3435_45(dumbo3435_58)
                         else
-                            -- Innocent Passenger speed control based on MoveDirection
+                            -- Innocent Passenger speed control based on MoveDirection (increased to 100)
                             if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
                                 dumbo3435_58:SetAttribute("SpeedSetupDone", true)
                                 
                                 -- Initial speed setup
                                 if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                    dumbo3435_59.WalkSpeed = 24
+                                    dumbo3435_59.WalkSpeed = 100
                                 else
                                     dumbo3435_59.WalkSpeed = 12
                                 end
@@ -563,7 +563,7 @@ while true do
                                 local conn
                                 conn = dumbo3435_59:GetPropertyChangedSignal("MoveDirection"):Connect(function()
                                     if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                        dumbo3435_59.WalkSpeed = 24
+                                        dumbo3435_59.WalkSpeed = 100
                                     else
                                         dumbo3435_59.WalkSpeed = 12
                                     end
@@ -581,7 +581,7 @@ while true do
                             else
                                 -- Fallback updates for already setup characters
                                 if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                    dumbo3435_59.WalkSpeed = 24
+                                    dumbo3435_59.WalkSpeed = 100
                                 else
                                     dumbo3435_59.WalkSpeed = 12
                                 end
