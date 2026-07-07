@@ -571,6 +571,16 @@ while true do
                     dumbo3435_52["CFrame"] = targetCFrame
                     task.wait(0.1)
                 end
+                
+                -- Orient camera to look down the ID passenger queue (CCTV view) to see wait states
+                pcall(function()
+                    local buttonPos = dumbo3435_25.Parent.Position
+                    local lookDir = (buttonPos - targetCFrame.Position).Unit
+                    local camPos = targetCFrame.Position - lookDir * 4.0 + Vector3.new(0, 5.0, 0)
+                    local camTarget = buttonPos + lookDir * 10.0
+                    dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
+                end)
+                
                 -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_25)
             elseif currentPodium == "MD" and dumbo3435_23 then
@@ -588,6 +598,16 @@ while true do
                     dumbo3435_52["CFrame"] = targetCFrame
                     task.wait(0.1)
                 end
+                
+                -- Orient camera to look down the MD passenger queue (CCTV view) to see wait states
+                pcall(function()
+                    local buttonPos = dumbo3435_23.Parent.Position
+                    local lookDir = (buttonPos - targetCFrame.Position).Unit
+                    local camPos = targetCFrame.Position - lookDir * 4.0 + Vector3.new(0, 5.0, 0)
+                    local camTarget = buttonPos + lookDir * 10.0
+                    dumbo3435_19["CFrame"] = CFrame.lookAt(camPos, camTarget)
+                end)
+                
                 -- Continuously trigger the prompt while standing at the desk (10 times/sec)
                 triggerPrompt(dumbo3435_23)
             end
