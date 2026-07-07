@@ -102,7 +102,7 @@ end
 -- Main UI Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 240)
+MainFrame.Size = UDim2.new(0, 300, 0, 190)
 MainFrame.Position = UDim2.new(1, -320, 0, 20) -- Top-right corner, 20px from edge
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
@@ -153,8 +153,8 @@ Subtitle.Parent = MainFrame
 -- Toggle Button
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0, 34)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.38, 0)
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 38)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.46, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
 ToggleBtn.Text = "AUTOFARM: ENABLED"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -166,27 +166,11 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleBtn
 
--- God Mode Button
-local GodModeBtn = Instance.new("TextButton")
-GodModeBtn.Name = "GodModeBtn"
-GodModeBtn.Size = UDim2.new(0.8, 0, 0, 34)
-GodModeBtn.Position = UDim2.new(0.1, 0, 0.57, 0)
-GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
-GodModeBtn.Text = "GOD MODE: OFF"
-GodModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-GodModeBtn.TextSize = 13
-GodModeBtn.Font = Enum.Font.GothamBold
-GodModeBtn.Parent = MainFrame
-
-local GodModeCorner = Instance.new("UICorner")
-GodModeCorner.CornerRadius = UDim.new(0, 8)
-GodModeCorner.Parent = GodModeBtn
-
 -- Destroy / Unload Button
 local DestroyBtn = Instance.new("TextButton")
 DestroyBtn.Name = "DestroyBtn"
-DestroyBtn.Size = UDim2.new(0.8, 0, 0, 30)
-DestroyBtn.Position = UDim2.new(0.1, 0, 0.78, 0)
+DestroyBtn.Size = UDim2.new(0.8, 0, 0, 34)
+DestroyBtn.Position = UDim2.new(0.1, 0, 0.72, 0)
 DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
 DestroyBtn.Text = "STOP & UNLOAD CHEAT"
 DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -251,23 +235,16 @@ local function saveSettings()
     pcall(function()
         if writefile then
             local autofarmVal = autofarmEnabled and "1" or "0"
-            local godModeVal  = godModeEnabled  and "1" or "0"
-            writefile(SETTINGS_FILE, autofarmVal .. "," .. godModeVal)
+            writefile(SETTINGS_FILE, autofarmVal)
         end
     end)
 end
 
 local function loadSettings()
-    local ok, result = pcall(function()
+    pcall(function()
         if readfile and isfile and isfile(SETTINGS_FILE) then
             local data = readfile(SETTINGS_FILE)
-            local parts = data:split(",")
-            if parts[1] ~= nil then
-                autofarmEnabled = (parts[1] == "1")
-            end
-            if parts[2] ~= nil then
-                godModeEnabled = (parts[2] == "1")
-            end
+            autofarmEnabled = (data:sub(1,1) == "1")
         end
     end)
 end
@@ -275,7 +252,6 @@ end
 -- Script state local variables
 local scriptActive = true
 local autofarmEnabled = true   -- default
-local godModeEnabled  = false  -- default
 
 -- Load saved settings from file (survives teleports!)
 loadSettings()
@@ -319,17 +295,10 @@ else
     ToggleBtn.BackgroundColor3 = Color3.fromRGB(140, 35, 35)
     ToggleBtn.Text = "AUTOFARM: DISABLED"
 end
-if godModeEnabled then
-    GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
-    GodModeBtn.Text = "GOD MODE: ON"
-else
-    GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
-    GodModeBtn.Text = "GOD MODE: OFF"
-end
 
 ToggleBtn.MouseButton1Click:Connect(function()
     autofarmEnabled = not autofarmEnabled
-    saveSettings()  -- save to file
+    saveSettings()
     if autofarmEnabled then
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
         ToggleBtn.Text = "AUTOFARM: ENABLED"
@@ -339,39 +308,37 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-GodModeBtn.MouseButton1Click:Connect(function()
-    godModeEnabled = not godModeEnabled
-    saveSettings()  -- save to file
-    if godModeEnabled then
-        GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
-        GodModeBtn.Text = "GOD MODE: ON"
-    else
-        GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
-        GodModeBtn.Text = "GOD MODE: OFF"
-    end
-end)
-
 DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
 end)
 
+-- Auto-rejoin on death: when player dies, fire BackToLobby after 2 seconds
+local function connectDeathRejoin(character)
+    local hum = character:WaitForChild("Humanoid", 5)
+    if not hum then return end
+    hum.Died:Connect(function()
+        if not scriptActive then return end
+        print("Secure the Airport: Player died! Auto-rejoining in 2 seconds...")
+        task.wait(2)
+        if not scriptActive then return end
+        -- Try to fire the BackToLobby server remote
+        local backToLobby = game:GetService("ReplicatedStorage"):FindFirstChild("Resources")
+            and game:GetService("ReplicatedStorage")["Resources"]:FindFirstChild("Events")
+            and game:GetService("ReplicatedStorage")["Resources"]["Events"]:FindFirstChild("Client")
+            and game:GetService("ReplicatedStorage")["Resources"]["Events"]["Client"]:FindFirstChild("BackToLobby")
+        if backToLobby then
+            pcall(function() backToLobby:FireServer() end)
+            print("Secure the Airport: Fired BackToLobby!")
+        end
+    end)
+end
 
--- God Mode loop: keeps player health at max every 0.1s when enabled
-task.spawn(function()
-    while task.wait(0.1) do
-        if not scriptActive or _G.AntigravityExecutionID ~= executionID then
-            break
-        end
-        if godModeEnabled then
-            pcall(function()
-                local char = LocalPlayer.Character
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
-                if hum and hum.Health > 0 then
-                    hum.Health = hum.MaxHealth
-                end
-            end)
-        end
-    end
+-- Connect for current character and all future respawns
+if LocalPlayer.Character then
+    task.spawn(connectDeathRejoin, LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(function(character)
+    task.spawn(connectDeathRejoin, character)
 end)
 
 
