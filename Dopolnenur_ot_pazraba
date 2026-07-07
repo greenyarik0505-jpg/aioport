@@ -423,6 +423,27 @@ local function dumbo3435_45(dumbo3435_46)
     end);
 end
 
+-- Checks if passenger is near any desk counter
+local function isNPCNearDesk(npc)
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    
+    local npcPos = hrp.Position
+    local idPos = dumbo3435_25 and dumbo3435_25.Parent and dumbo3435_25.Parent.Position
+    local mdPos = dumbo3435_23 and dumbo3435_23.Parent and dumbo3435_23.Parent.Position
+    
+    if idPos then
+        local dist = (Vector3.new(npcPos.X, 0, npcPos.Z) - Vector3.new(idPos.X, 0, idPos.Z)).Magnitude
+        if dist < 6.0 then return true end
+    end
+    if mdPos then
+        local dist = (Vector3.new(npcPos.X, 0, npcPos.Z) - Vector3.new(mdPos.X, 0, mdPos.Z)).Magnitude
+        if dist < 6.0 then return true end
+    end
+    
+    return false
+end
+
 -- Strictly check if NPC is a valid living passenger who is NOT a criminal
 local function isNPCNormalPassenger(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
@@ -521,29 +542,53 @@ while true do
                             -- Criminal: Freeze them
                             dumbo3435_45(dumbo3435_58)
                         else
-                            -- Innocent Passenger: Accelerated WalkSpeed set to 24
-                            if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
-                                dumbo3435_58:SetAttribute("SpeedSetupDone", true)
-                                dumbo3435_59.WalkSpeed = 24
-                                local conn
-                                conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-                                    if dumbo3435_59.WalkSpeed ~= 24 then
-                                        dumbo3435_59.WalkSpeed = 24
-                                    end
-                                end)
-                                dumbo3435_connections[dumbo3435_58] = conn
-                                
-                                -- Connection cleanup on NPC removal (prevents memory leak)
-                                dumbo3435_58.AncestryChanged:Connect(function(_, parent)
-                                    if not parent then
-                                        if dumbo3435_connections[dumbo3435_58] then
-                                            pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
-                                            dumbo3435_connections[dumbo3435_58] = nil
-                                        end
-                                    end
-                                end)
+                            -- Innocent: check if they are near the desk counter
+                            if isNPCNearDesk(dumbo3435_58) then
+                                -- Near desk counter -> release walkspeed lock so they can stop naturally!
+                                if dumbo3435_connections[dumbo3435_58] then
+                                    pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
+                                    dumbo3435_connections[dumbo3435_58] = nil
+                                end
                             else
-                                dumbo3435_59.WalkSpeed = 24
+                                -- Far from desk -> speed them up in the queue
+                                if not dumbo3435_58:GetAttribute("SpeedSetupDone") or not dumbo3435_connections[dumbo3435_58] then
+                                    dumbo3435_58:SetAttribute("SpeedSetupDone", true)
+                                    dumbo3435_59.WalkSpeed = 24
+                                    
+                                    if dumbo3435_connections[dumbo3435_58] then
+                                        pcall(function() dumbo3435_connections[dumbo3435_58]:Disconnect() end)
+                                    end
+                                    
+                                    local conn
+                                    conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                                        -- Only override if we are still far from the desk
+                                        if not isNPCNearDesk(dumbo3435_58) then
+                                            if dumbo3435_59.WalkSpeed ~= 24 then
+                                                dumbo3435_59.WalkSpeed = 24
+                                            end
+                                        else
+                                            -- Release lock if they arrived at desk
+                                            if conn then
+                                                pcall(function() conn:Disconnect() end)
+                                                if dumbo3435_connections[dumbo3435_58] == conn then
+                                                    dumbo3435_connections[dumbo3435_58] = nil
+                                                end
+                                            end
+                                        end
+                                    end)
+                                    dumbo3435_connections[dumbo3435_58] = conn
+                                    
+                                    dumbo3435_58.AncestryChanged:Connect(function(_, parent)
+                                        if not parent then
+                                            if dumbo3435_connections[dumbo3435_58] == conn then
+                                                pcall(function() conn:Disconnect() end)
+                                                dumbo3435_connections[dumbo3435_58] = nil
+                                            end
+                                        end
+                                    end)
+                                else
+                                    dumbo3435_59.WalkSpeed = 24
+                                end
                             end
                         end
                     else
