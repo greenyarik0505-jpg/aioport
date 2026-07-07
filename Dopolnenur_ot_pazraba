@@ -102,7 +102,7 @@ end
 -- Main UI Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 190)
+MainFrame.Size = UDim2.new(0, 300, 0, 240)
 MainFrame.Position = UDim2.new(0.5, -150, 0.35, -95)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
@@ -153,9 +153,9 @@ Subtitle.Parent = MainFrame
 -- Toggle Button
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0, 38)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.46, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75) -- Default Green (Enabled)
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 34)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.38, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
 ToggleBtn.Text = "AUTOFARM: ENABLED"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 13
@@ -166,12 +166,28 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleBtn
 
+-- God Mode Button
+local GodModeBtn = Instance.new("TextButton")
+GodModeBtn.Name = "GodModeBtn"
+GodModeBtn.Size = UDim2.new(0.8, 0, 0, 34)
+GodModeBtn.Position = UDim2.new(0.1, 0, 0.57, 0)
+GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
+GodModeBtn.Text = "GOD MODE: OFF"
+GodModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+GodModeBtn.TextSize = 13
+GodModeBtn.Font = Enum.Font.GothamBold
+GodModeBtn.Parent = MainFrame
+
+local GodModeCorner = Instance.new("UICorner")
+GodModeCorner.CornerRadius = UDim.new(0, 8)
+GodModeCorner.Parent = GodModeBtn
+
 -- Destroy / Unload Button
 local DestroyBtn = Instance.new("TextButton")
 DestroyBtn.Name = "DestroyBtn"
-DestroyBtn.Size = UDim2.new(0.8, 0, 0, 34)
-DestroyBtn.Position = UDim2.new(0.1, 0, 0.72, 0)
-DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40) -- Default Red
+DestroyBtn.Size = UDim2.new(0.8, 0, 0, 30)
+DestroyBtn.Position = UDim2.new(0.1, 0, 0.78, 0)
+DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
 DestroyBtn.Text = "STOP & UNLOAD CHEAT"
 DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 DestroyBtn.TextSize = 12
@@ -231,6 +247,7 @@ end)
 -- Script state local variables (avoids global race conditions on re-execution)
 local scriptActive = true
 local autofarmEnabled = true
+local godModeEnabled = false
 
 -- Connection tracker dictionary (keys: NPC models, values: connections)
 -- Prevents memory leaks by auto-garbage collecting when NPCs are destroyed
@@ -274,8 +291,37 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+GodModeBtn.MouseButton1Click:Connect(function()
+    godModeEnabled = not godModeEnabled
+    if godModeEnabled then
+        GodModeBtn.BackgroundColor3 = Color3.fromRGB(220, 150, 0)
+        GodModeBtn.Text = "GOD MODE: ON ♥"
+    else
+        GodModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 130)
+        GodModeBtn.Text = "GOD MODE: OFF"
+    end
+end)
+
 DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
+end)
+
+-- God Mode loop: keeps player health at max every 0.1s when enabled
+task.spawn(function()
+    while task.wait(0.1) do
+        if not scriptActive or _G.AntigravityExecutionID ~= executionID then
+            break
+        end
+        if godModeEnabled then
+            pcall(function()
+                local char = LocalPlayer.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum and hum.Health > 0 then
+                    hum.Health = hum.MaxHealth
+                end
+            end)
+        end
+    end
 end)
 
 
