@@ -2,6 +2,10 @@
 -- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
+-- Unique execution ID to kill all previously spawned scripts running in background threads!
+_G.AntigravityExecutionID = os.clock()
+local executionID = _G.AntigravityExecutionID
+
 print("Secure the Airport: Initializing UI Menu...")
 
 local CoreGui = game:GetService("CoreGui")
@@ -357,15 +361,55 @@ local function findLobbyStartButton()
                     end
                 end
             end
+        elseif desc:IsA("TextLabel") then
+            local text = desc.Text:lower()
+            if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                -- Found text label, traverse up to find clickable parent
+                local parent = desc.Parent
+                while parent and parent ~= PlayerGui do
+                    if parent:IsA("TextButton") or parent:IsA("ImageButton") then
+                        return parent
+                    end
+                    parent = parent.Parent
+                end
+            end
         end
     end
     return nil
 end
 
+-- Click GUI Button simulating native events
+local function clickGuiButton(btn)
+    if not btn then return end
+    
+    -- Method 1: firesignal (standard exploit api)
+    if firesignal then
+        pcall(function() firesignal(btn.MouseButton1Click) end)
+        pcall(function() firesignal(btn.Activated) end)
+        pcall(function() firesignal(btn.MouseButton1Down) end)
+        pcall(function() firesignal(btn.MouseButton1Up) end)
+    end
+    
+    -- Method 2: getconnections (alternative exploit api)
+    if getconnections then
+        local events = {"MouseButton1Click", "Activated", "MouseButton1Down", "MouseButton1Up"}
+        for _, eventName in ipairs(events) do
+            pcall(function()
+                for _, conn in ipairs(getconnections(btn[eventName])) do
+                    conn:Fire()
+                end
+            end)
+        end
+    end
+end
+
 -- Auto-Lobby creator loop: runs independently in background (respects autofarm toggle state)
 task.spawn(function()
     while task.wait(0.5) do
-        if not scriptActive then break end
+        -- Kill this thread immediately if a newer script execution is started
+        if not scriptActive or _G.AntigravityExecutionID ~= executionID then 
+            break 
+        end
         
         -- Respect Autofarm Enabled toggle status
         if autofarmEnabled then
@@ -390,18 +434,7 @@ task.spawn(function()
                 -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
                 local startBtn = findLobbyStartButton()
                 if startBtn then
-                    pcall(function()
-                        startBtn:MouseButton1Click()
-                        -- Exploit compatibility simulation
-                        local events = {"MouseButton1Down", "MouseButton1Up", "MouseButton1Click", "Activated"}
-                        for _, event in ipairs(events) do
-                            pcall(function()
-                                for _, connection in ipairs(getconnections(startBtn[event])) do
-                                    connection:Fire()
-                                end
-                            end)
-                        end
-                    end)
+                    clickGuiButton(startBtn)
                     task.wait(1.0)
                 end
             end
@@ -658,8 +691,8 @@ end
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
-    -- If script active local variable is set to false, end loop immediately (safe from race conditions)
-    if not scriptActive then
+    -- Kill this thread immediately if a newer script execution is started
+    if not scriptActive or _G.AntigravityExecutionID ~= executionID then
         break
     end
 
