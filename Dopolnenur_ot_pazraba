@@ -41,13 +41,9 @@ ScreenGui.ResetOnSpawn = false
 -- Set a standard display order so the Roblox Escape menu can render on top and function properly!
 ScreenGui.DisplayOrder = 10 
 
--- Put in CoreGui to persist across deaths/resets, fallback to PlayerGui
-local success, err = pcall(function()
-    ScreenGui.Parent = CoreGui
-end)
-if not success then
-    ScreenGui.Parent = PlayerGui
-end
+-- Put in PlayerGui directly to prevent conflicts with CoreGui (which closes the Escape menu!)
+ScreenGui.Parent = PlayerGui
+
 
 -- Simple custom dragging logic compatible with touch (mobile) and mouse (PC)
 local function makeDraggable(frame, parentFrame)
@@ -268,21 +264,7 @@ DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
 end)
 
--- Keep mouse free so Roblox does not lock it to the center during autofarm.
--- Do not override mouse behavior if the Roblox Escape Menu is open, to prevent instant closes!
-task.spawn(function()
-    while task.wait(0.1) do
-        if not scriptActive or _G.AntigravityExecutionID ~= executionID then
-            break
-        end
-        pcall(function()
-            if not GuiService.MenuIsOpen then
-                UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-                UserInputService.MouseIconEnabled = true
-            end
-        end)
-    end
-end)
+
 
 local lobbyTextNeedles = {"жд", "игрок", "players", "waiting", "wait", "player"}
 local lobbyPartNeedles = {"elevator", "lift", "queue", "lobby", "circle", "startcircle", "lobbycircle", "party", "join", "teleport", "pad"}
