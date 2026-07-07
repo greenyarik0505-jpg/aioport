@@ -2,6 +2,202 @@
 -- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
+print("Secure the Airport: Initializing UI Menu...")
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15)
+
+-- Destroy old GUI instance if it exists to prevent overlapping UI on re-run
+if CoreGui:FindFirstChild("AntigravityHub") then
+    CoreGui["AntigravityHub"]:Destroy()
+end
+if PlayerGui:FindFirstChild("AntigravityHub") then
+    PlayerGui["AntigravityHub"]:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AntigravityHub"
+ScreenGui.ResetOnSpawn = false
+
+-- Put in CoreGui to persist across deaths/resets, fallback to PlayerGui
+local success, err = pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not success then
+    ScreenGui.Parent = PlayerGui
+end
+
+-- Simple custom dragging logic compatible with touch (mobile) and mouse (PC)
+local function makeDraggable(frame, parentFrame)
+    parentFrame = parentFrame or frame
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        parentFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = parentFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+end
+
+-- Main UI Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 300, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -150, 0.35, -80)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(60, 60, 75)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = MainFrame
+
+makeDraggable(MainFrame)
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 36)
+Title.BackgroundTransparency = 1
+Title.Text = "Antigravity Hub"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+local TitleLine = Instance.new("Frame")
+TitleLine.Size = UDim2.new(0.9, 0, 0, 1)
+TitleLine.Position = UDim2.new(0.05, 0, 0, 36)
+TitleLine.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
+TitleLine.BorderSizePixel = 0
+TitleLine.Parent = MainFrame
+
+-- Subtitle
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Size = UDim2.new(1, 0, 0, 20)
+Subtitle.Position = UDim2.new(0, 0, 0, 42)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Secure the Airport Autofarm"
+Subtitle.TextColor3 = Color3.fromRGB(140, 140, 150)
+Subtitle.TextSize = 11
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.Parent = MainFrame
+
+-- Toggle Button
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 40)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.56, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75) -- Default Green (Enabled)
+ToggleBtn.Text = "AUTOFARM: ENABLED"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 13
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = ToggleBtn
+
+-- Minimize / Floating Icon
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Name = "FloatBtn"
+FloatBtn.Size = UDim2.new(0, 45, 0, 45)
+FloatBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
+FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+FloatBtn.Text = "AG"
+FloatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FloatBtn.TextSize = 14
+FloatBtn.Font = Enum.Font.GothamBold
+FloatBtn.Visible = false
+FloatBtn.Parent = ScreenGui
+
+local FloatCorner = Instance.new("UICorner")
+FloatCorner.CornerRadius = UDim.new(0, 22.5)
+FloatCorner.Parent = FloatBtn
+
+local FloatStroke = Instance.new("UIStroke")
+FloatStroke.Thickness = 2
+FloatStroke.Color = Color3.fromRGB(60, 60, 75)
+FloatStroke.Parent = FloatBtn
+
+makeDraggable(FloatBtn)
+
+-- Minimize Frame Button inside Main Menu
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(0.9, -8, 0.04, 0)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "—"
+CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+CloseBtn.TextSize = 14
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Parent = MainFrame
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    FloatBtn.Visible = true
+end)
+
+FloatBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    FloatBtn.Visible = false
+end)
+
+-- Autofarm Toggle state variable
+_G.AutofarmEnabled = true
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    _G.AutofarmEnabled = not _G.AutofarmEnabled
+    if _G.AutofarmEnabled then
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75)
+        ToggleBtn.Text = "AUTOFARM: ENABLED"
+    else
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(140, 35, 35)
+        ToggleBtn.Text = "AUTOFARM: DISABLED"
+    end
+end)
+
+print("Secure the Airport: UI Menu initialized!")
+
 print("Secure the Airport: Waiting for game to load...")
 repeat
     task.wait();
@@ -152,9 +348,27 @@ local function dumbo3435_45(dumbo3435_46)
     end);
 end
 
+-- Helper function to calculate a natural stand position in front of the counter desk (clerk-side)
+local function getCounterStandCFrame(buttonPrompt)
+    if not buttonPrompt or not buttonPrompt.Parent then return CFrame.new(dumbo3435_33) end
+    local buttonPos = buttonPrompt.Parent.Position
+    -- Calculate 2D direction on the XZ plane to prevent Y component scaling bugs
+    local dir = (Vector3.new(dumbo3435_33.X, 0, dumbo3435_33.Z) - Vector3.new(buttonPos.X, 0, buttonPos.Z)).Unit
+    -- Stand 4.5 studs away from the button to completely avoid clipping/colliding with the desk models
+    local targetPos = buttonPos + dir * 4.5
+    return CFrame.new(Vector3.new(targetPos.X, 3.44, targetPos.Z))
+end
+
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
+    -- If UI turned off the autofarm, pause and wait
+    if not _G.AutofarmEnabled then
+        pressingButtons = false
+        task.wait(0.5)
+        continue
+    end
+
     if (dumbo3435_32 and dumbo3435_32["Enabled"] and dumbo3435_32:FindFirstChild("EndingWinFrame")) then
         local dumbo3435_50 = dumbo3435_32["EndingWinFrame"]:FindFirstChild("BarTop") and dumbo3435_32["EndingWinFrame"]["BarTop"]:FindFirstChild("TextLabel");
         if (dumbo3435_50 and dumbo3435_50["Visible"]) then
