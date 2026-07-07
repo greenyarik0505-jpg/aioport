@@ -2,7 +2,7 @@
 -- deobfuscated, fixed, & made robust by Antigravity (Google DeepMind)
 -- works on both story/endless. round 1 might have some criminals passing through but should work flawlessly after that
 
-print("Secure the Airport: Initializing UI Menu with Top-level Display Order...")
+print("Secure the Airport: Initializing UI Menu with Unload feature...")
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -71,11 +71,11 @@ local function makeDraggable(frame, parentFrame)
     end)
 end
 
--- Main UI Frame
+-- Main UI Frame (extended size to fit Destroy button)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 160)
-MainFrame.Position = UDim2.new(0.5, -150, 0.35, -80)
+MainFrame.Size = UDim2.new(0, 300, 0, 190)
+MainFrame.Position = UDim2.new(0.5, -150, 0.35, -95)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -125,8 +125,8 @@ Subtitle.Parent = MainFrame
 -- Toggle Button
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0, 40)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.56, 0)
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 38)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.46, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 140, 75) -- Default Green (Enabled)
 ToggleBtn.Text = "AUTOFARM: ENABLED"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -137,6 +137,22 @@ ToggleBtn.Parent = MainFrame
 local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleBtn
+
+-- Destroy / Unload Button
+local DestroyBtn = Instance.new("TextButton")
+DestroyBtn.Name = "DestroyBtn"
+DestroyBtn.Size = UDim2.new(0.8, 0, 0, 34)
+DestroyBtn.Position = UDim2.new(0.1, 0, 0.72, 0)
+DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40) -- Default Red
+DestroyBtn.Text = "STOP & UNLOAD CHEAT"
+DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DestroyBtn.TextSize = 12
+DestroyBtn.Font = Enum.Font.GothamBold
+DestroyBtn.Parent = MainFrame
+
+local DestroyCorner = Instance.new("UICorner")
+DestroyCorner.CornerRadius = UDim.new(0, 8)
+DestroyCorner.Parent = DestroyBtn
 
 -- Minimize / Floating Icon
 local FloatBtn = Instance.new("TextButton")
@@ -184,8 +200,45 @@ FloatBtn.MouseButton1Click:Connect(function()
     FloatBtn.Visible = false
 end)
 
--- Autofarm Toggle state variable
+-- Connection tracker
+local dumbo3435_connections = {}
+
+local function unloadCheat()
+    _G.CheatDestroyed = true
+    _G.AutofarmEnabled = false
+    
+    -- Disconnect all active property change connections
+    for _, conn in ipairs(dumbo3435_connections) do
+        if conn then
+            pcall(function() conn:Disconnect() end)
+        end
+    end
+    table.clear(dumbo3435_connections)
+    
+    -- Restore original walkspeeds to all innocents currently in the workspace
+    local storage = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Storage")
+    local normalStorage = storage and storage:FindFirstChild("NormalStorage")
+    local npcWorkspace = normalStorage and normalStorage:FindFirstChild("NPCWorkspace")
+    if npcWorkspace then
+        for _, npc in ipairs(npcWorkspace:GetChildren()) do
+            local hum = npc:FindFirstChildOfClass("Humanoid")
+            if hum then
+                pcall(function() hum.WalkSpeed = 12 end) -- default speed
+            end
+        end
+    end
+    
+    -- Destroy the ScreenGui completely
+    if ScreenGui then
+        ScreenGui:Destroy()
+    end
+    
+    print("Secure the Airport: Cheat fully stopped and unloaded!")
+end
+
+-- Autofarm Toggle state variables
 _G.AutofarmEnabled = true
+_G.CheatDestroyed = false
 
 ToggleBtn.MouseButton1Click:Connect(function()
     _G.AutofarmEnabled = not _G.AutofarmEnabled
@@ -196,6 +249,10 @@ ToggleBtn.MouseButton1Click:Connect(function()
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(140, 35, 35)
         ToggleBtn.Text = "AUTOFARM: DISABLED"
     end
+end)
+
+DestroyBtn.MouseButton1Click:Connect(function()
+    unloadCheat()
 end)
 
 print("Secure the Airport: UI Menu initialized!")
@@ -341,11 +398,12 @@ local function dumbo3435_45(dumbo3435_46)
         -- Maintain freeze on WalkSpeed change
         if not dumbo3435_46:GetAttribute("FreezeSetupDone") then
             dumbo3435_46:SetAttribute("FreezeSetupDone", true)
-            dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            local conn = dumbo3435_48:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
                 if dumbo3435_48.WalkSpeed ~= 0 then
                     dumbo3435_48.WalkSpeed = 0
                 end
             end)
+            table.insert(dumbo3435_connections, conn)
         end
     end
     task.spawn(function()
@@ -395,6 +453,11 @@ end
 print("Secure the Airport: Variables initialized! Starting main loop...");
 
 while true do
+    -- If the destroy button was clicked, stop script execution immediately
+    if _G.CheatDestroyed then
+        break
+    end
+
     -- Passive check/update of NPC speeds (innocents accelerated, hostiles/criminals frozen)
     -- This section runs CONTINUOUSLY regardless of Autofarm toggle state so you don't lose the game!
     if dumbo3435_17 then
@@ -420,11 +483,12 @@ while true do
                     if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
                         dumbo3435_58:SetAttribute("SpeedSetupDone", true)
                         dumbo3435_59.WalkSpeed = 24
-                        dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                        local conn = dumbo3435_59:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
                             if dumbo3435_59.WalkSpeed ~= 24 then
-                                    dumbo3435_59.WalkSpeed = 24
+                                dumbo3435_59.WalkSpeed = 24
                             end
                         end)
+                        table.insert(dumbo3435_connections, conn)
                     else
                         dumbo3435_59.WalkSpeed = 24
                     end
