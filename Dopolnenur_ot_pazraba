@@ -21,6 +21,14 @@ if PlayerGui:FindFirstChild("AntigravityHub") then
     PlayerGui["AntigravityHub"]:Destroy()
 end
 
+-- Automatic autoexec installer so the cheat automatically loads on game/lobby teleports!
+if writefile then
+    pcall(function()
+        writefile("autoexec/SecureAirportAutofarm.lua", 'loadstring(game:HttpGet("https://raw.githubusercontent.com/greenyarik0505-jpg/aioport/refs/heads/main/Dopolnenur_ot_pazraba?t=" .. tostring(os.time())))()')
+        print("Secure the Airport: Installed successfully to autoexec for automatic round teleports!")
+    end)
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AntigravityHub"
 ScreenGui.ResetOnSpawn = false
@@ -330,23 +338,38 @@ local function findLobbyCircle()
     return nil
 end
 
--- Helper: Find the CREATE/START lobby button in PlayerGui (even if inside ImageButton or nested labels)
+-- Helper: Check if a GuiObject is fully visible on the screen
+local function isGuiObjectVisible(gui)
+    if not gui.Visible then return false end
+    local parent = gui.Parent
+    while parent and parent:IsA("GuiObject") do
+        if not parent.Visible then
+            return false
+        end
+        parent = parent.Parent
+    end
+    local screenGui = gui:FindFirstAncestorOfClass("ScreenGui")
+    if screenGui and not screenGui.Enabled then
+        return false
+    end
+    return true
+end
+
+-- Helper: Find the CREATE/START lobby button in PlayerGui
 local function findLobbyStartButton()
     for _, desc in ipairs(PlayerGui:GetDescendants()) do
         if desc:IsA("TextButton") or desc:IsA("ImageButton") then
-            -- Verify ScreenGui is enabled and button has a physical size
-            local screenGui = desc:FindFirstAncestorOfClass("ScreenGui")
-            if screenGui and screenGui.Enabled and desc.AbsoluteSize.X > 0 then
+            if isGuiObjectVisible(desc) and desc.AbsoluteSize.X > 0 then
                 -- Check button name
                 local name = desc.Name:lower()
-                if string.find(name, "create") or string.find(name, "start") or string.find(name, "confirm") then
+                if string.find(name, "create") or string.find(name, "start") or string.find(name, "confirm") or string.find(name, "party") then
                     return desc
                 end
                 
                 -- Check button text
                 if desc:IsA("TextButton") then
                     local text = desc.Text:lower()
-                    if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                    if string.find(text, "созд") or string.find(text, "соз") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
                         return desc
                     end
                 end
@@ -355,22 +378,24 @@ local function findLobbyStartButton()
                 for _, child in ipairs(desc:GetChildren()) do
                     if child:IsA("TextLabel") then
                         local text = child.Text:lower()
-                        if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                        if string.find(text, "созд") or string.find(text, "соз") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
                             return desc
                         end
                     end
                 end
             end
         elseif desc:IsA("TextLabel") then
-            local text = desc.Text:lower()
-            if string.find(text, "создать") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
-                -- Found text label, traverse up to find clickable parent
-                local parent = desc.Parent
-                while parent and parent ~= PlayerGui do
-                    if parent:IsA("TextButton") or parent:IsA("ImageButton") then
-                        return parent
+            if isGuiObjectVisible(desc) then
+                local text = desc.Text:lower()
+                if string.find(text, "созд") or string.find(text, "соз") or string.find(text, "create") or string.find(text, "старт") or string.find(text, "start") then
+                    -- Found text label, traverse up to find clickable parent
+                    local parent = desc.Parent
+                    while parent and parent ~= PlayerGui do
+                        if parent:IsA("TextButton") or parent:IsA("ImageButton") then
+                            return parent
+                        end
+                        parent = parent.Parent
                     end
-                    parent = parent.Parent
                 end
             end
         end
@@ -418,7 +443,7 @@ task.spawn(function()
             local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
             
             if isLobby then
-                -- 1. Automatically teleport player onto the lobby elevator circle
+                -- 1. Automatically teleport player onto the lobby elevator circle (stand directly on surface)
                 local char = LocalPlayer.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -426,7 +451,8 @@ task.spawn(function()
                     if target then
                         local targetPos = target:GetPivot().Position
                         if (hrp.Position - targetPos).Magnitude > 5.0 then
-                            hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2.0, 0))
+                            -- Target Y + 0.5 to touch floor and fire collision event
+                            hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 0.5, 0))
                         end
                     end
                 end
