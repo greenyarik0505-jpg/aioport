@@ -286,13 +286,6 @@ local startButtonNeedles = {"созд", "создать", "старт", "нач�
 local lobbyLoopDelay = 0.15
 local startClickInterval = 1.0
 local lastStartClickTime = 0
-local lobbyTeleportDelay = 0.5
-local lobbyTeleportTriggerRadius = 0.75
-local pendingLobbyTeleportSince = 0
-local lobbyTeleportTriggerPositions = {
-    Vector3.new(-32.822117, 3.100000, -7.076836),
-    Vector3.new(-52.833706, 3.100000, -28.481833),
-}
 
 local function stringHasAnyNeedle(value, needles)
     if type(value) ~= "string" then
@@ -382,37 +375,6 @@ local function getLobbyTouchCFrame(target)
     local targetPos = part.Position
     local topY = targetPos.Y + (part.Size.Y / 2)
     return CFrame.new(Vector3.new(targetPos.X, topY + 0.5, targetPos.Z))
-end
-
-local function isNearLobbyTeleportTrigger(pos)
-    if not pos then
-        return false
-    end
-
-    local pos2D = Vector3.new(pos.X, 0, pos.Z)
-    for _, triggerPos in ipairs(lobbyTeleportTriggerPositions) do
-        local trigger2D = Vector3.new(triggerPos.X, 0, triggerPos.Z)
-        if (pos2D - trigger2D).Magnitude <= lobbyTeleportTriggerRadius then
-            return true
-        end
-    end
-    return false
-end
-
-local function getClosestLobbyTriggerCFrame(pos)
-    local closest = lobbyTeleportTriggerPositions[1]
-    local closestDist = math.huge
-    local pos2D = pos and Vector3.new(pos.X, 0, pos.Z) or nil
-
-    for _, triggerPos in ipairs(lobbyTeleportTriggerPositions) do
-        local dist = pos2D and (pos2D - Vector3.new(triggerPos.X, 0, triggerPos.Z)).Magnitude or 0
-        if dist < closestDist then
-            closestDist = dist
-            closest = triggerPos
-        end
-    end
-
-    return CFrame.new(closest)
 end
 
 -- Helper: Check if GUI is visible by walking every parent, including folders and ScreenGui.Enabled.
@@ -543,15 +505,11 @@ task.spawn(function()
         
         -- Respect Autofarm Enabled toggle status
         if autofarmEnabled then
-            local char = LocalPlayer.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local isOnLobbyButtonSpot = hrp and isNearLobbyTeleportTrigger(hrp.Position)
-
             -- Click the CREATE/START button whenever it is visibly present. This stays separate
             -- from teleport checks so a lobby GUI cannot be blocked by map/round detection.
             local now = os.clock()
             local startBtn = findLobbyStartButton()
-            if startBtn and isOnLobbyButtonSpot and (now - lastStartClickTime) >= startClickInterval then
+            if startBtn and (now - lastStartClickTime) >= startClickInterval then
                 lastStartClickTime = now
                 clickGuiButton(startBtn)
             end
@@ -561,22 +519,28 @@ task.spawn(function()
             local isLobby = (not hasActiveRoundReturnButton()) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
             
             if isLobby then
-                -- 1. Put player exactly on the lobby button spot after a short 0.5s settle delay.
-                local target = findElevatorByText()
-                if hrp and target and not isOnLobbyButtonSpot then
-                    if pendingLobbyTeleportSince == 0 then
-                        pendingLobbyTeleportSince = now
+                -- 1. Automatically teleport player onto the lobby elevator circle (stand directly on surface)
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local target = findElevatorByText()
+                    if target then
+                        local touchCFrame = getLobbyTouchCFrame(target)
+                        if touchCFrame and (hrp.Position - touchCFrame.Position).Magnitude > 3.0 then
+                            hrp.CFrame = touchCFrame
+                            task.wait(0.1)
+                            if firetouchinterest and target:IsA("BasePart") then
+                                pcall(function()
+                                    firetouchinterest(hrp, target, 0)
+                                    task.wait(0.05)
+                                    firetouchinterest(hrp, target, 1)
+                                end)
+                            end
+                        end
                     end
-
-                    if (now - pendingLobbyTeleportSince) >= lobbyTeleportDelay then
-                        hrp.CFrame = getClosestLobbyTriggerCFrame(hrp.Position)
-                        pendingLobbyTeleportSince = 0
-                    end
-                else
-                    pendingLobbyTeleportSince = 0
                 end
                 
-                -- 2. Button click is handled above once per second only while standing on the exact button spot.
+                -- 2. Button click is handled above once per second when the CREATE/START GUI is visible.
             end
         end
     end
@@ -645,8 +609,11 @@ local dumbo3435_21 = dumbo3435_13:WaitForChild("Resources", 15) and dumbo3435_13
 
 -- Static CFrames obtained directly from the player's character in-game
 local cframeCenter = CFrame.new(-54.345211, 3.00000024, -6.39607954, 0.60876298, 2.20848229e-08, -0.793352187, -4.42953976e-08, 1, -6.15183815e-09, 0.793352187, 3.888686e-08, 0.60876298)
-local cframeMD = CFrame.new(-32.822117, 3.100000, -7.076836) -- вещевой контроль
-local cframeID = CFrame.new(-52.833706, 3.100000, -28.481833) -- паспортный контроль
+local cframeMD = CFrame.new(-41.6090355, 3.00000024, -5.88942528, -0.156434447, -6.73699816e-08, -0.987688363, -5.03442728e-08, 1, -6.02360117e-08, 0.987688363, 4.03014653e-08, -0.156434447)
+local cframeID = CFrame.new(-58.8363342, 3.00000024, -22.6157169, -0.0523362495, -4.32435288e-09, -0.99862951, 3.60094994e-08, 1, -6.21747587e-09, 0.99862951, -3.62855488e-08, -0.0523362495)
+local passengerMDSpot = Vector3.new(-32.822117, 3.100000, -7.076836) -- NPC at вещевой контроль
+local passengerIDSpot = Vector3.new(-52.833706, 3.100000, -28.481833) -- NPC at паспортный контроль
+local passengerSpotRadius = 2.0
 
 local dumbo3435_33 = cframeCenter.Position;
 
@@ -880,6 +847,15 @@ local function isPassengerInQueue(npc, buttonPos)
     local dot = npcDir:Dot(clerkDir)
     
     return dot < -0.2
+end
+
+local function isPassengerAtSpot(npc, spotPos)
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    local npcPos2D = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
+    local spotPos2D = Vector3.new(spotPos.X, 0, spotPos.Z)
+    return (npcPos2D - spotPos2D).Magnitude <= passengerSpotRadius
 end
 
 print("Secure the Airport: Variables initialized! Starting main loop...");
@@ -1127,10 +1103,9 @@ while true do
             local mdQueue = 0
             
             if dumbo3435_25 and dumbo3435_25.Parent then
-                local idPos = dumbo3435_25.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        if isNPCNormalPassenger(npc) and isPassengerInQueue(npc, idPos) then
+                        if isNPCNormalPassenger(npc) and isPassengerAtSpot(npc, passengerIDSpot) then
                             idQueue = idQueue + 1
                         end
                     end
@@ -1138,10 +1113,9 @@ while true do
             end
             
             if dumbo3435_23 and dumbo3435_23.Parent then
-                local mdPos = dumbo3435_23.Parent.Position
                 if dumbo3435_15 then
                     for _, npc in ipairs(dumbo3435_15:GetChildren()) do
-                        if isNPCNormalPassenger(npc) and isPassengerInQueue(npc, mdPos) then
+                        if isNPCNormalPassenger(npc) and isPassengerAtSpot(npc, passengerMDSpot) then
                             mdQueue = mdQueue + 1
                         end
                     end
