@@ -250,6 +250,85 @@ DestroyBtn.MouseButton1Click:Connect(function()
     unloadCheat()
 end)
 
+-- Helper: Find lobby elevator circle based on floating text
+local function findElevatorByText()
+    for _, desc in ipairs(workspace:GetDescendants()) do
+        if desc:IsA("TextLabel") and (string.find(desc.Text:lower(), "ждём") or string.find(desc.Text:lower(), "игроков") or string.find(desc.Text:lower(), "players")) then
+            local parent = desc:FindFirstAncestorOfClass("Part") or desc:FindFirstAncestorOfClass("Model")
+            if parent then
+                return parent
+            end
+        end
+    end
+    return nil
+end
+
+-- Helper: Fallback search for flat circles/pads in workspace
+local function findLobbyCircle()
+    local names = {"elevator", "queue", "lobbycircle", "startcircle", "circle", "party", "join"}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Transparency < 1 and obj.Size.Y < 2 then
+            local objName = obj.Name:lower()
+            for _, name in ipairs(names) do
+                if string.find(objName, name) then
+                    if math.abs(obj.Position.Y - 3.0) < 6 then
+                        return obj
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Auto-Lobby creator loop: runs independently in background
+task.spawn(function()
+    while task.wait(0.5) do
+        if not scriptActive then break end
+        
+        -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
+        local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
+        local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
+        
+        if isLobby then
+            -- 1. Automatically teleport player onto the lobby elevator circle
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local target = findElevatorByText() or findLobbyCircle()
+                if target then
+                    local targetPos = target:GetPivot().Position
+                    if (hrp.Position - targetPos).Magnitude > 5.0 then
+                        hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2.0, 0))
+                    end
+                end
+            end
+            
+            -- 2. Automatically click the green "СОЗДАТЬ" (CREATE) button if the lobby party pop-up is shown
+            for _, desc in ipairs(PlayerGui:GetDescendants()) do
+                if desc:IsA("TextButton") and desc.Visible and desc.AbsoluteSize.X > 0 then
+                    local text = desc.Text:lower()
+                    if text == "создать" or text == "create" or string.find(text, "создать") or string.find(text, "create") then
+                        pcall(function()
+                            desc:MouseButton1Click()
+                            -- Exploit compatibility simulation
+                            local events = {"MouseButton1Down", "MouseButton1Up", "MouseButton1Click", "Activated"}
+                            for _, event in ipairs(events) do
+                                pcall(function()
+                                    for _, connection in ipairs(getconnections(desc[event])) do
+                                        connection:Fire()
+                                    end
+                                end)
+                            end
+                        end)
+                        task.wait(1.0)
+                    end
+                end
+            end
+        end
+    end
+end)
+
 print("Secure the Airport: UI Menu initialized!");
 
 print("Secure the Airport: Waiting for game to load...")
@@ -546,13 +625,13 @@ while true do
                             -- Criminal: Freeze them
                             dumbo3435_45(dumbo3435_58)
                         else
-                            -- Innocent Passenger speed control based on MoveDirection (increased to 100)
+                            -- Innocent Passenger speed control based on MoveDirection (restored to stable 24)
                             if not dumbo3435_58:GetAttribute("SpeedSetupDone") then
                                 dumbo3435_58:SetAttribute("SpeedSetupDone", true)
                                 
                                 -- Initial speed setup
                                 if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                    dumbo3435_59.WalkSpeed = 100
+                                    dumbo3435_59.WalkSpeed = 24
                                 else
                                     dumbo3435_59.WalkSpeed = 12
                                 end
@@ -563,7 +642,7 @@ while true do
                                 local conn
                                 conn = dumbo3435_59:GetPropertyChangedSignal("MoveDirection"):Connect(function()
                                     if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                        dumbo3435_59.WalkSpeed = 100
+                                        dumbo3435_59.WalkSpeed = 24
                                     else
                                         dumbo3435_59.WalkSpeed = 12
                                     end
@@ -581,7 +660,7 @@ while true do
                             else
                                 -- Fallback updates for already setup characters
                                 if dumbo3435_59.MoveDirection.Magnitude > 0 then
-                                    dumbo3435_59.WalkSpeed = 100
+                                    dumbo3435_59.WalkSpeed = 24
                                 else
                                     dumbo3435_59.WalkSpeed = 12
                                 end
@@ -657,7 +736,7 @@ while true do
         if (dumbo3435_73 and dumbo3435_73:FindFirstChild("Toggle")) then
             local dumbo3435_74 = dumbo3435_64:FindFirstChild("FirePart") or dumbo3435_64;
             local dumbo3435_75 = dumbo3435_74["Position"];
-            local dumbo3435_76 = dumbo3435_75 + Vector3.new(0, 2, 4);
+            local dumbo3435_76 = dumbo3435_74["Position"] + Vector3.new(0, 2, 4);
             dumbo3435_52["CFrame"] = CFrame.lookAt(dumbo3435_76, dumbo3435_75);
             dumbo3435_19["CFrame"] = CFrame.lookAt(dumbo3435_76 + Vector3.new(0, 2, 2), dumbo3435_75);
             task.wait(0.3);
