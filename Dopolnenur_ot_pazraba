@@ -23,6 +23,7 @@ print("Secure the Airport: Initializing UI Menu...")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 15)
 
@@ -268,14 +269,17 @@ DestroyBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Keep mouse free so Roblox does not lock it to the center during autofarm.
+-- Do not override mouse behavior if the Roblox Escape Menu is open, to prevent instant closes!
 task.spawn(function()
     while task.wait(0.1) do
         if not scriptActive or _G.AntigravityExecutionID ~= executionID then
             break
         end
         pcall(function()
-            UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-            UserInputService.MouseIconEnabled = true
+            if not GuiService.MenuIsOpen then
+                UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+                UserInputService.MouseIconEnabled = true
+            end
         end)
     end
 end)
@@ -444,7 +448,7 @@ end
 
 -- Click GUI Button using VirtualInputManager, firesignal, and getconnections fallbacks.
 local function clickGuiButton(btn)
-    if not btn or not isGuiObjectVisible(btn) then
+    if not btn or not isGuiObjectVisible(btn) or GuiService.MenuIsOpen then
         return
     end
 
@@ -504,7 +508,7 @@ task.spawn(function()
         end
         
         -- Respect Autofarm Enabled toggle status
-        if autofarmEnabled then
+        if autofarmEnabled and not GuiService.MenuIsOpen then
             -- Click the CREATE/START button whenever it is visibly present. This stays separate
             -- from teleport checks so a lobby GUI cannot be blocked by map/round detection.
             local now = os.clock()
@@ -865,6 +869,13 @@ while true do
     if not scriptActive or _G.AntigravityExecutionID ~= executionID then
         break
     end
+
+    -- Pause autofarm loop and do not move if player is looking at the Roblox Esc Menu
+    if GuiService.MenuIsOpen then
+        task.wait(0.2)
+        continue
+    end
+
 
     -- Passive check/update of NPC speeds (innocents accelerated, hostiles/criminals frozen)
     -- This section runs CONTINUOUSLY regardless of Autofarm toggle state so you don't lose the game!
