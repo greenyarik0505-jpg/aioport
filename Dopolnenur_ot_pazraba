@@ -37,8 +37,8 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AntigravityHub"
 ScreenGui.ResetOnSpawn = false
--- Set max possible display order so it stays visible and interactive on top of the Roblox Escape menu!
-ScreenGui.DisplayOrder = 2147483647 
+-- Set a standard display order so the Roblox Escape menu can render on top and function properly!
+ScreenGui.DisplayOrder = 10 
 
 -- Put in CoreGui to persist across deaths/resets, fallback to PlayerGui
 local success, err = pcall(function()
