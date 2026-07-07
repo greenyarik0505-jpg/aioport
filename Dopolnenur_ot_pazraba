@@ -272,7 +272,7 @@ local startButtonNeedles = {"созд", "создать", "старт", "нач�
 local lobbyLoopDelay = 0.15
 local preTeleportDelay = 5.0
 local postTeleportStartDelay = 5.0
-local startClickInterval = 3.0
+local startClickInterval = 1.0
 local pendingLobbyTeleportSince = 0
 local lastLobbyTeleportTime = 0
 local lastStartClickTime = 0
@@ -400,6 +400,18 @@ local function getGuiText(gui)
     return table.concat(pieces, " ")
 end
 
+local function hasActiveRoundReturnButton()
+    for _, desc in ipairs(PlayerGui:GetDescendants()) do
+        if (desc:IsA("TextButton") or desc:IsA("TextLabel")) and isGuiObjectVisible(desc) then
+            local text = getGuiText(desc)
+            if stringHasAnyNeedle(text, {"вернуться в лобби", "back to lobby", "return to lobby"}) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- Helper: Find the CREATE/START lobby button in PlayerGui.
 local function findLobbyStartButton()
     for _, desc in ipairs(PlayerGui:GetDescendants()) do
@@ -485,7 +497,7 @@ task.spawn(function()
         if autofarmEnabled then
             -- Check if we are in the lobby (ButtonPodiums does not exist or is empty)
             local buttonPodiums = workspace:FindFirstChild("WorkspaceScriptable") and workspace["WorkspaceScriptable"]:FindFirstChild("Objects") and workspace["WorkspaceScriptable"]["Objects"]:FindFirstChild("ButtonPodiums")
-            local isLobby = not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID")
+            local isLobby = (not hasActiveRoundReturnButton()) and (not buttonPodiums or not buttonPodiums:FindFirstChild("ButtonPodiumID"))
             
             if isLobby then
                 local lobbyTeleportPending = false
@@ -494,7 +506,7 @@ task.spawn(function()
                 local char = LocalPlayer.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    local target = findElevatorByText() or findLobbyCircle()
+                    local target = findElevatorByText()
                     if target then
                         local touchCFrame = getLobbyTouchCFrame(target)
                         if touchCFrame and (hrp.Position - touchCFrame.Position).Magnitude > 3.0 then
